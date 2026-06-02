@@ -1,0 +1,17 @@
+{
+	"projectName": "coret",
+	"mode": "file-router",
+	"typescript": true,
+	"tailwind": false,
+	"packageManager": "bun",
+	"git": true,
+	"install": true,
+	"intent": true,
+	"addOnOptions": {},
+	"includeExamples": false,
+	"envVarValues": {},
+	"routerOnly": false,
+	"version": 1,
+	"framework": "react",
+	"chosenAddOns": []
+}
