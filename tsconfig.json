@@ -5,6 +5,7 @@
 		"drizzle.config.ts",
 		"oxfmt.config.ts",
 		"oxlint.config.ts",
+		"vitest.config.ts",
 		"vite.config.ts"
 	],
 	"exclude": ["node_modules", ".idea", ".output", ".tanstack"],

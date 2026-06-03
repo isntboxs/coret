@@ -114,10 +114,6 @@ export const invitationRelations = relations(invitationTable, ({ one }) => {
 			fields: [invitationTable.organizationId],
 			references: [organizationTable.id],
 		}),
-		team: one(teamTable, {
-			fields: [invitationTable.teamId],
-			references: [teamTable.id],
-		}),
 		inviter: one(userTable, {
 			fields: [invitationTable.inviterId],
 			references: [userTable.id],

@@ -11,7 +11,11 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:push": "drizzle-kit push",
+		"db:seed": "bun run src/server/db/seed.ts",
+		"db:start": "docker compose up -d",
+		"db:stop": "docker compose stop",
 		"db:studio": "drizzle-kit studio",
+		"db:watch": "docker compose up",
 		"dev": "vite dev --port 3002",
 		"fmt": "oxfmt",
 		"fmt:check": "oxfmt --check",
@@ -21,6 +25,7 @@
 		"test": "vitest run --passWithNoTests"
 	},
 	"dependencies": {
+		"@better-auth/utils": "^0.4.1",
 		"@t3-oss/env-core": "^0.13.11",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.3.0",

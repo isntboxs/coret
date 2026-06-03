@@ -6,6 +6,7 @@ const isServer = typeof window === 'undefined'
 export const env = createEnv({
 	server: {
 		DATABASE_URL: z.url(),
+		APP_ORIGIN: z.url(),
 		BETTER_AUTH_SECRET: z.string(),
 		BETTER_AUTH_URL: z.url(),
 		CORS_ORIGIN: z
@@ -18,6 +19,8 @@ export const env = createEnv({
 		GITHUB_CLIENT_SECRET: z.string(),
 		GOOGLE_CLIENT_ID: z.string(),
 		GOOGLE_CLIENT_SECRET: z.string(),
+		RESEND_API_KEY: z.string(),
+		EMAIL_FROM: z.string().min(1),
 	},
 
 	clientPrefix: 'VITE_',

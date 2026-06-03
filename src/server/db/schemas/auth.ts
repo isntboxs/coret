@@ -194,9 +194,7 @@ export const invitationTable = pgTable(
 			.references(() => organizationTable.id, { onDelete: 'cascade' }),
 		email: text('email').notNull(),
 		role: text('role'),
-		teamId: uuid('team_id').references(() => teamTable.id, {
-			onDelete: 'set null',
-		}),
+		teamId: text('team_id'),
 		status: text('status').default('pending').notNull(),
 		expiresAt: timestamp('expires_at').notNull(),
 		createdAt: timestamp('created_at').defaultNow().notNull(),
