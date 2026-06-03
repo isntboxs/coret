@@ -39,7 +39,6 @@
 		"@types/react": "^19.2.16",
 		"@types/react-dom": "^19.2.3",
 		"@vitejs/plugin-react": "^6.0.2",
-		"eslint-plugin-fsd-lint": "^1.2.1",
 		"eslint-plugin-react-hooks": "^7.1.1",
 		"jsdom": "^28.1.0",
 		"oxfmt": "^0.53.0",

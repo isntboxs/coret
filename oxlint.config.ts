@@ -31,26 +31,9 @@ export default defineConfig({
 			name: 'eslint-tanstack-query',
 			specifier: '@tanstack/eslint-plugin-query',
 		},
-		{ name: 'fsd', specifier: 'eslint-plugin-fsd-lint' },
 	],
 	ignorePatterns: ['dist', '.output', 'node_modules'],
 	rules: {
-		'fsd/forbidden-imports': 'error',
-		'fsd/no-cross-slice-dependency': 'error',
-		'fsd/no-global-store-imports': 'error',
-		'fsd/no-public-api-sidestep': [
-			'error',
-			{
-				publicApi: {
-					allowSegmentImports: false,
-					enforceShared: true,
-				},
-			},
-		],
-		'fsd/no-relative-imports': 'error',
-		'fsd/no-ui-in-business-logic': 'error',
-		'fsd/ordered-imports': 'error',
-
 		// Tanstack Router rules, ref: https://tanstack.com/router/latest/docs/eslint/eslint-plugin-router
 		'eslint-tanstack-router/create-route-property-order': 'error',
 		// Tanstack Query rules, ref: https://tanstack.com/query/latest/docs/eslint/eslint-plugin-query
