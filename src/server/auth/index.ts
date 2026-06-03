@@ -37,6 +37,8 @@ export const auth = betterAuth({
 			member: schema.memberTable,
 			organization: schema.organizationTable,
 			session: schema.sessionTable,
+			team: schema.teamTable,
+			teamMember: schema.teamMemberTable,
 			user: schema.userTable,
 			invitation: schema.invitationTable,
 			verification: schema.verificationTable,
@@ -60,7 +62,24 @@ export const auth = betterAuth({
 		multiSessionPlugin(),
 		openAPIPlugin(),
 		usernamePlugin(),
-		organizationPlugin(),
+		organizationPlugin({
+			schema: {
+				team: {
+					additionalFields: {
+						key: {
+							type: 'string',
+							required: true,
+						},
+					},
+				},
+			},
+			teams: {
+				enabled: true,
+				defaultTeam: {
+					enabled: false,
+				},
+			},
+		}),
 		testUtilsPlugin(),
 		tanstackStartCookies(),
 	],

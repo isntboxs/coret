@@ -49,6 +49,9 @@ export const sessionTable = pgTable(
 			.references(() => userTable.id, { onDelete: 'cascade' }),
 		impersonatedBy: text('impersonated_by'),
 		activeOrganizationId: text('active_organization_id'),
+		activeTeamId: uuid('active_team_id').references(() => teamTable.id, {
+			onDelete: 'set null',
+		}),
 	},
 	(table) => [index('session_userId_idx').on(table.userId)]
 )
@@ -112,6 +115,53 @@ export const organizationTable = pgTable(
 	(table) => [uniqueIndex('organization_slug_uidx').on(table.slug)]
 )
 
+export const teamTable = pgTable(
+	'team',
+	{
+		id: uuid('id')
+			.default(sql`pg_catalog.gen_random_uuid()`)
+			.primaryKey(),
+		name: text('name').notNull(),
+		key: text('key').notNull(),
+		organizationId: uuid('organization_id')
+			.notNull()
+			.references(() => organizationTable.id, { onDelete: 'cascade' }),
+		createdAt: timestamp('created_at').notNull(),
+		updatedAt: timestamp('updated_at')
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		index('team_organizationId_idx').on(table.organizationId),
+		uniqueIndex('team_organizationId_key_uidx').on(
+			table.organizationId,
+			table.key
+		),
+	]
+)
+
+export const teamMemberTable = pgTable(
+	'team_member',
+	{
+		id: uuid('id')
+			.default(sql`pg_catalog.gen_random_uuid()`)
+			.primaryKey(),
+		teamId: uuid('team_id')
+			.notNull()
+			.references(() => teamTable.id, { onDelete: 'cascade' }),
+		userId: uuid('user_id')
+			.notNull()
+			.references(() => userTable.id, { onDelete: 'cascade' }),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+	},
+	(table) => [
+		index('teamMember_teamId_idx').on(table.teamId),
+		index('teamMember_userId_idx').on(table.userId),
+		uniqueIndex('teamMember_teamId_userId_uidx').on(table.teamId, table.userId),
+	]
+)
+
 export const memberTable = pgTable(
 	'member',
 	{
@@ -144,6 +194,9 @@ export const invitationTable = pgTable(
 			.references(() => organizationTable.id, { onDelete: 'cascade' }),
 		email: text('email').notNull(),
 		role: text('role'),
+		teamId: uuid('team_id').references(() => teamTable.id, {
+			onDelete: 'set null',
+		}),
 		status: text('status').default('pending').notNull(),
 		expiresAt: timestamp('expires_at').notNull(),
 		createdAt: timestamp('created_at').defaultNow().notNull(),

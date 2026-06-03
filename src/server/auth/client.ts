@@ -17,6 +17,10 @@ export const authClient = createAuthClient({
 		inferAdditionalFields<typeof auth>(),
 		multiSessionClient(),
 		usernameClient(),
-		organizationClient(),
+		organizationClient({
+			teams: {
+				enabled: true,
+			},
+		}),
 	],
 })

@@ -10,7 +10,12 @@ const config = defineConfig({
 	resolve: { tsconfigPaths: true },
 	plugins: [
 		devtools(),
-		nitro({ preset: 'bun', rollupConfig: { external: [/^@sentry\//] } }),
+		nitro({
+			preset: 'bun',
+			rollupConfig: {
+				external: [/^@better-auth\/kysely-adapter/, /^@sentry\//, /^kysely$/],
+			},
+		}),
 		tailwindcss(),
 		tanstackStart(),
 		viteReact(),

@@ -45,5 +45,11 @@ export default defineConfig({
 		],
 		internalPattern: ['#/', '@/'],
 	},
-	ignorePatterns: ['node_modules/**', '.tanstack/**', 'bun.lock'],
+	ignorePatterns: [
+		'node_modules/**',
+		'.tanstack/**',
+		'bun.lock',
+		'src/routeTree.gen.ts',
+		'src/server/db/migrations/meta/**',
+	],
 })
