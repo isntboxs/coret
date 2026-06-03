@@ -6,6 +6,9 @@ const isServer = typeof window === 'undefined'
 export const env = createEnv({
 	server: {
 		DATABASE_URL: z.url(),
+		TEST_DATABASE_URL: z
+			.url()
+			.default('postgresql://postgres:password@localhost:5432/coret_test'),
 		APP_ORIGIN: z.url(),
 		BETTER_AUTH_SECRET: z.string(),
 		BETTER_AUTH_URL: z.url(),

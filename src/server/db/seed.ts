@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import { hashPassword } from '@better-auth/utils/password'
 import { eq } from 'drizzle-orm'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { db, dbPool } from '#/server/db'
 import {
@@ -17,7 +19,7 @@ import {
 	userTable,
 } from '#/server/db/schemas'
 
-const demo = {
+export const demo = {
 	userId: '11111111-1111-4111-8111-111111111111',
 	accountId: '22222222-2222-4222-8222-222222222222',
 	organizationId: '33333333-3333-4333-8333-333333333333',
@@ -33,12 +35,12 @@ const demo = {
 	projectId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
 	issueId: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
 	commentId: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
-}
+} as const
 
-const demoEmail = 'demo@coret.local'
-const demoPassword = 'password123'
+export const demoEmail = 'demo@coret.local'
+export const demoPassword = 'password123'
 
-async function main() {
+export async function seedDatabase() {
 	const now = new Date()
 	const passwordHash = await hashPassword(demoPassword)
 
@@ -254,16 +256,31 @@ async function main() {
 		.from(teamIssueCounterTable)
 		.where(eq(teamIssueCounterTable.teamId, demo.teamId))
 
+	return {
+		demo,
+		demoEmail,
+		demoPassword,
+		nextIssueNumber: counter?.nextNumber ?? null,
+	}
+}
+
+async function runCli() {
+	const result = await seedDatabase()
 	console.debug('Seed complete.')
 	console.debug(`Demo user: ${demoEmail}`)
 	console.debug(`Demo password: ${demoPassword}`)
 	console.debug(`Demo workspace: coret-demo / CORE`)
-	console.debug(`Next issue number: ${counter?.nextNumber ?? 'missing'}`)
+	console.debug(`Next issue number: ${result.nextIssueNumber ?? 'missing'}`)
 }
 
-void main()
-	.catch((error: unknown) => {
-		console.debug(error)
-		process.exitCode = 1
-	})
-	.finally(() => void dbPool.end())
+if (
+	process.argv[1] &&
+	resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
+	void runCli()
+		.catch((error: unknown) => {
+			console.debug(error)
+			process.exitCode = 1
+		})
+		.finally(() => void dbPool.end())
+}

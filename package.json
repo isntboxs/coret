@@ -22,7 +22,7 @@
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
 		"preview": "vite preview",
-		"test": "vitest run --passWithNoTests"
+		"test": "vitest run"
 	},
 	"dependencies": {
 		"@better-auth/utils": "^0.4.1",
