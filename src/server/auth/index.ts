@@ -47,7 +47,6 @@ export const auth = betterAuth({
 	emailAndPassword: {
 		enabled: true,
 		autoSignIn: false,
-		disableSignUp: true,
 		minPasswordLength: 8,
 		maxPasswordLength: 128,
 	},
