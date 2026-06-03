@@ -4,9 +4,15 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
 import type { ReactNode } from 'react'
 
+import { Toaster } from '#/components/ui/sonner'
+import { getAuthFn } from '#/server/functions/get-auth-Fn'
 import appCss from '#/styles.css?url'
 
 export const Route = createRootRoute({
+	beforeLoad: async () => {
+		const auth = await getAuthFn()
+		return { auth }
+	},
 	head: () => {
 		return {
 			meta: [
@@ -34,12 +40,13 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: ReactNode }) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<head>
 				<HeadContent />
 			</head>
 			<body>
 				{children}
+				<Toaster />
 				<TanStackDevtools
 					config={{
 						position: 'bottom-right',

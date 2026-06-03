@@ -2,6 +2,7 @@ import { asc, count, eq } from 'drizzle-orm'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
 import { auth } from '#/server/auth'
+import { createSharedAuthOptions } from '#/server/auth/shared'
 import { testAuth } from '#/server/auth/test'
 import { db } from '#/server/db'
 import {
@@ -17,7 +18,7 @@ import {
 	teamTable,
 	userTable,
 } from '#/server/db/schemas'
-import { demo, demoEmail, demoPassword, seedDatabase } from '#/server/db/seed'
+import { demo, demoEmail, seedDatabase } from '#/server/db/seed'
 import {
 	closeTestDatabase,
 	prepareTestDatabase,
@@ -230,19 +231,35 @@ describe('seed database', () => {
 		expect(counter?.nextNumber).toBe(2)
 	})
 
-	it('lets the seeded demo user sign in through Better Auth email auth', async () => {
+	it('keeps email/password sign-in disabled for the OAuth-only flow', async () => {
 		await seedDatabase()
 
-		const signIn = await testAuth.api.signInEmail({
-			body: {
-				email: demoEmail,
-				password: demoPassword,
-			},
-		})
+		await expect(
+			testAuth.api.signInEmail({
+				body: {
+					email: demoEmail,
+					password: 'password123',
+				},
+			})
+		).rejects.toThrow(/email and password is not enabled/i)
+	})
+})
 
-		expect(signIn.user.id).toBe(demo.userId)
-		expect(signIn.user.email).toBe(demoEmail)
-		expect(signIn.token).toEqual(expect.any(String))
+describe('OAuth-only auth configuration', () => {
+	it('enables GitHub and Google providers while disabling email/password', () => {
+		const options = createSharedAuthOptions()
+
+		expect(options.emailAndPassword.enabled).toBe(false)
+		expect(options.socialProviders.github).toMatchObject({
+			enabled: true,
+			clientId: 'test-github-client-id',
+			clientSecret: 'test-github-client-secret',
+		})
+		expect(options.socialProviders.google).toMatchObject({
+			enabled: true,
+			clientId: 'test-google-client-id',
+			clientSecret: 'test-google-client-secret',
+		})
 	})
 })
 

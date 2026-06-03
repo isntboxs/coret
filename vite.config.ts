@@ -8,6 +8,9 @@ import { defineConfig } from 'vite'
 
 const config = defineConfig({
 	resolve: { tsconfigPaths: true },
+	optimizeDeps: {
+		exclude: ['@better-auth/kysely-adapter', 'kysely'],
+	},
 	plugins: [
 		devtools(),
 		nitro({

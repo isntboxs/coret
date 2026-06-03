@@ -1,5 +1,6 @@
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import type { BetterAuthOptions } from 'better-auth'
+import type { OrganizationOptions } from 'better-auth/plugins'
 
 import { env } from '#/env'
 import { db } from '#/server/db'
@@ -22,7 +23,7 @@ export const organizationPluginOptions = {
 			enabled: false,
 		},
 	},
-} as const
+} satisfies OrganizationOptions
 
 export function createSharedAuthOptions() {
 	return {
@@ -55,10 +56,7 @@ export function createSharedAuthOptions() {
 			},
 		}),
 		emailAndPassword: {
-			enabled: true,
-			autoSignIn: false,
-			minPasswordLength: 8,
-			maxPasswordLength: 128,
+			enabled: false,
 		},
 		logger: {
 			disabled: false,
