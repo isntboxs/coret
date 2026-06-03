@@ -7,6 +7,11 @@
 	},
 	"scripts": {
 		"build": "vite build",
+		"db:down": "docker compose down",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "drizzle-kit migrate",
+		"db:push": "drizzle-kit push",
+		"db:studio": "drizzle-kit studio",
 		"dev": "vite dev --port 3002",
 		"fmt": "oxfmt",
 		"fmt:check": "oxfmt --check",
@@ -16,6 +21,7 @@
 		"test": "vitest run --passWithNoTests"
 	},
 	"dependencies": {
+		"@t3-oss/env-core": "^0.13.11",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.3.0",
 		"@tanstack/devtools-vite": "^0.7.0",
@@ -25,10 +31,15 @@
 		"@tanstack/react-router-ssr-query": "^1.167.1",
 		"@tanstack/react-start": "latest",
 		"@tanstack/router-plugin": "^1.168.13",
+		"better-auth": "^1.6.14",
+		"dotenv": "^17.4.2",
+		"drizzle-orm": "^0.45.2",
 		"nitro": "^3.0.260522-beta",
+		"pg": "^8.21.0",
 		"react": "^19.2.7",
 		"react-dom": "^19.2.7",
-		"tailwindcss": "^4.3.0"
+		"tailwindcss": "^4.3.0",
+		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@tanstack/eslint-plugin-query": "^5.101.0",
@@ -36,9 +47,11 @@
 		"@testing-library/dom": "^10.4.1",
 		"@testing-library/react": "^16.3.2",
 		"@types/node": "^22.19.19",
+		"@types/pg": "^8.20.0",
 		"@types/react": "^19.2.16",
 		"@types/react-dom": "^19.2.3",
 		"@vitejs/plugin-react": "^6.0.2",
+		"drizzle-kit": "^0.31.10",
 		"eslint-plugin-react-hooks": "^7.1.1",
 		"jsdom": "^28.1.0",
 		"oxfmt": "^0.53.0",
