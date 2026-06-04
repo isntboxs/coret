@@ -1,4 +1,6 @@
 import { execFile as execFileCallback } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { promisify } from 'node:util'
 import { Pool } from 'pg'
 
@@ -119,6 +121,19 @@ async function createDatabaseIfMissing(target: DatabaseTarget) {
 }
 
 async function pushSchema(databaseUrl: string) {
+	const drizzleKitBin = resolve('node_modules/drizzle-kit/bin.cjs')
+
+	if (existsSync(drizzleKitBin)) {
+		await runCommand(
+			process.execPath,
+			[drizzleKitBin, 'push', '--config', 'drizzle.config.ts', '--force'],
+			{
+				DATABASE_URL: databaseUrl,
+			}
+		)
+		return
+	}
+
 	await runCommand(
 		'bunx',
 		['drizzle-kit', 'push', '--config', 'drizzle.config.ts', '--force'],

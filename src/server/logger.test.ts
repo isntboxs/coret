@@ -1,8 +1,11 @@
 import { Writable } from 'node:stream'
-
 import { describe, expect, it } from 'vitest'
 
-import { createChildLogger, createLogger } from '#/server/logger'
+import {
+	createChildLogger,
+	createLogger,
+	createLoggerOptions,
+} from '#/server/logger'
 
 class MemoryDestination extends Writable {
 	chunks: Array<string> = []
@@ -109,5 +112,72 @@ describe('logger', () => {
 			scope: 'auth',
 			feature: 'oauth',
 		})
+	})
+
+	it('uses LOG_PRETTY as the default pretty mode', () => {
+		const options = createLoggerOptions()
+
+		expect(options.transport).toBeUndefined()
+	})
+
+	it('forces pino-pretty outside production when pretty is true', () => {
+		const originalNodeEnv = process.env.NODE_ENV
+
+		process.env.NODE_ENV = 'development'
+
+		try {
+			const options = createLoggerOptions({ pretty: true })
+
+			expect(options.transport).toMatchObject({
+				target: 'pino-pretty',
+			})
+		} finally {
+			process.env.NODE_ENV = originalNodeEnv
+		}
+	})
+
+	it('keeps JSON output when pretty is false', () => {
+		const options = createLoggerOptions({ pretty: false })
+
+		expect(options.transport).toBeUndefined()
+	})
+
+	it('uses TTY detection for auto pretty mode', () => {
+		const originalIsTTY = process.stdout.isTTY
+
+		try {
+			Object.defineProperty(process.stdout, 'isTTY', {
+				configurable: true,
+				value: false,
+			})
+			expect(createLoggerOptions({ pretty: 'auto' }).transport).toBeUndefined()
+
+			Object.defineProperty(process.stdout, 'isTTY', {
+				configurable: true,
+				value: true,
+			})
+			expect(createLoggerOptions({ pretty: 'auto' }).transport).toMatchObject({
+				target: 'pino-pretty',
+			})
+		} finally {
+			Object.defineProperty(process.stdout, 'isTTY', {
+				configurable: true,
+				value: originalIsTTY,
+			})
+		}
+	})
+
+	it('keeps production logs in JSON mode', () => {
+		const originalNodeEnv = process.env.NODE_ENV
+
+		process.env.NODE_ENV = 'production'
+
+		try {
+			const options = createLoggerOptions({ pretty: true })
+
+			expect(options.transport).toBeUndefined()
+		} finally {
+			process.env.NODE_ENV = originalNodeEnv
+		}
 	})
 })

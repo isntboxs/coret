@@ -1,5 +1,10 @@
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import type { QueryClient } from '@tanstack/react-query'
+import {
+	HeadContent,
+	Scripts,
+	createRootRouteWithContext,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
 import type { ReactNode } from 'react'
@@ -8,7 +13,11 @@ import { Toaster } from '#/components/ui/sonner'
 import { getAuthFn } from '#/server/functions/get-auth-Fn'
 import appCss from '#/styles.css?url'
 
-export const Route = createRootRoute({
+type RootRouterContext = {
+	queryClient: QueryClient
+}
+
+export const Route = createRootRouteWithContext<RootRouterContext>()({
 	beforeLoad: async () => {
 		const auth = await getAuthFn()
 		return { auth }

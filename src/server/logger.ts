@@ -1,5 +1,4 @@
 import '@tanstack/react-start/server-only'
-
 import pino from 'pino'
 import type { DestinationStream, Logger, LoggerOptions } from 'pino'
 
@@ -78,15 +77,19 @@ function shouldUsePrettyTransport(pretty: CreateLoggerOptions['pretty']) {
 		return false
 	}
 
+	if (prettyMode === 'true') {
+		return true
+	}
+
 	return Boolean(process.stdout.isTTY)
 }
 
-function createLoggerOptions({
+export function createLoggerOptions({
 	name = 'coret',
 	level = env.LOG_LEVEL,
 	pretty,
 	bindings = {},
-}: CreateLoggerOptions): LoggerOptions {
+}: CreateLoggerOptions = {}): LoggerOptions {
 	return {
 		name,
 		level,
