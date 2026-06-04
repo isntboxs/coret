@@ -24,6 +24,10 @@ export const env = createEnv({
 		GOOGLE_CLIENT_SECRET: z.string(),
 		RESEND_API_KEY: z.string(),
 		EMAIL_FROM: z.string().min(1),
+		LOG_LEVEL: z
+			.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'silent'])
+			.default('info'),
+		LOG_PRETTY: z.enum(['auto', 'true', 'false']).default('auto'),
 	},
 
 	clientPrefix: 'VITE_',

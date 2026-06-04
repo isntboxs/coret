@@ -1,0 +1,113 @@
+import { Writable } from 'node:stream'
+
+import { describe, expect, it } from 'vitest'
+
+import { createChildLogger, createLogger } from '#/server/logger'
+
+class MemoryDestination extends Writable {
+	chunks: Array<string> = []
+
+	_write(
+		chunk: Buffer | string,
+		_encoding: BufferEncoding,
+		callback: (error?: Error | null) => void
+	) {
+		this.chunks.push(chunk.toString())
+		callback()
+	}
+
+	readLines() {
+		return this.chunks
+			.join('')
+			.split('\n')
+			.filter((line) => line.length > 0)
+	}
+}
+
+function createMemoryDestination() {
+	return new MemoryDestination()
+}
+
+function parseLogLine(line: string | undefined) {
+	if (!line) {
+		throw new Error('Expected a log line')
+	}
+
+	return JSON.parse(line) as Record<string, unknown>
+}
+
+describe('logger', () => {
+	it('emits parseable JSON with app metadata and child bindings', () => {
+		const destination = createMemoryDestination()
+		const logger = createLogger({
+			pretty: false,
+			destination,
+			bindings: { service: 'tests' },
+		})
+
+		logger.child({ scope: 'unit' }).info({ feature: 'logger' }, 'ready')
+
+		const [line] = destination.readLines()
+		const entry = parseLogLine(line)
+
+		expect(entry.msg).toBe('ready')
+		expect(entry.level).toBe(30)
+		expect(entry.name).toBe('coret')
+		expect(entry.app).toBe('coret')
+		expect(entry.environment).toBe('test')
+		expect(entry.service).toBe('tests')
+		expect(entry.scope).toBe('unit')
+		expect(entry.feature).toBe('logger')
+		expect(typeof entry.time).toBe('string')
+	})
+
+	it('redacts sensitive fields from nested log objects', () => {
+		const destination = createMemoryDestination()
+		const logger = createLogger({ pretty: false, destination })
+
+		logger.warn(
+			{
+				password: 'plain-text',
+				headers: {
+					Authorization: 'Bearer secret-token',
+					Cookie: 'session=secret',
+				},
+				account: {
+					refreshToken: 'refresh-token',
+				},
+			},
+			'sensitive values hidden'
+		)
+
+		const [line] = destination.readLines()
+		const entry = parseLogLine(line)
+		const headers = entry.headers as Record<string, string> | undefined
+		const account = entry.account as Record<string, string> | undefined
+
+		expect(entry.password).toBe('[Redacted]')
+		expect(headers?.Authorization).toBe('[Redacted]')
+		expect(headers?.Cookie).toBe('[Redacted]')
+		expect(account?.refreshToken).toBe('[Redacted]')
+	})
+
+	it('keeps explicit JSON mode independent from pino-pretty', () => {
+		const destination = createMemoryDestination()
+		const logger = createLogger({ pretty: false, destination })
+
+		logger.info('json output')
+
+		const [line] = destination.readLines()
+
+		expect(() => parseLogLine(line)).not.toThrow()
+		expect(line).toContain('"msg":"json output"')
+	})
+
+	it('creates scoped child loggers from the shared app logger', () => {
+		const childLogger = createChildLogger('auth', { feature: 'oauth' })
+
+		expect(childLogger.bindings()).toMatchObject({
+			scope: 'auth',
+			feature: 'oauth',
+		})
+	})
+})
