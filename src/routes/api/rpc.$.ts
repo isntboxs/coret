@@ -39,9 +39,9 @@ const apiHandler = new OpenAPIHandler(orpcRouters, {
 			schemaConverters: [new ZodToJsonSchemaConverter()],
 			specGenerateOptions: {
 				info: {
-					title: 'trid RPC API Reference',
+					title: 'Coret RPC API Reference',
 					version: '1.0.0',
-					description: 'API Reference for trid',
+					description: 'API Reference for Coret',
 				},
 				commonSchemas: {
 					UndefinedError: { error: 'UndefinedError' },

@@ -166,10 +166,20 @@ function isoTimestamp() {
 	return `,"time":"${new Date().toISOString()}"`
 }
 
-function serializeError(value: unknown) {
+function serializeError(value: unknown, seen = new WeakSet<Error>()) {
 	if (!(value instanceof Error)) {
 		return value
 	}
+
+	if (seen.has(value)) {
+		return {
+			type: value.name,
+			message: value.message,
+			cause: '[Circular]',
+		}
+	}
+
+	seen.add(value)
 
 	const serialized: Record<string, unknown> = {
 		type: value.name,
@@ -178,7 +188,7 @@ function serializeError(value: unknown) {
 	}
 
 	if ('cause' in value) {
-		serialized.cause = serializeError(value.cause)
+		serialized.cause = serializeError(value.cause, seen)
 	}
 
 	return serialized
@@ -276,18 +286,26 @@ function normalizeHeaderValue(
 
 function serializeUrl(value: unknown) {
 	if (typeof value === 'string') {
-		return value
+		return stripQueryAndHash(value)
 	}
 
 	if (value instanceof URL) {
-		return value.href
+		return value.pathname
 	}
 
 	if (isRecord(value) && typeof value.href === 'string') {
-		return value.href
+		return stripQueryAndHash(value.href)
 	}
 
 	return undefined
+}
+
+function stripQueryAndHash(raw: string) {
+	try {
+		return new URL(raw).pathname
+	} catch {
+		return raw.split('?')[0]?.split('#')[0] ?? raw
+	}
 }
 
 function readStringProperty(record: Record<string, unknown>, key: string) {

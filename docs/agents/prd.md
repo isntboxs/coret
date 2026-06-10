@@ -217,7 +217,6 @@ Reference docs:
 Moving an issue between teams follows Linear's documented behavior:
 
 - Single-issue move between teams is included in v1.
-- Bulk move is deferred.
 - Undo move is deferred.
 - Bulk move is deferred.
 - The target team must be in the same workspace and accessible to the actor.
@@ -287,6 +286,15 @@ Issue fields:
 - Completed timestamp, optional
 - Canceled timestamp, optional
 - Archived timestamp, optional
+
+### Editor content requirements
+
+- The server must validate every incoming BlockNote JSON description against the BlockNote schema before storing it.
+- The server must reject a BlockNote JSON description larger than 256 KB or nested deeper than 16 levels to limit denial-of-service risk.
+- Malformed or malicious BlockNote JSON description payloads must be rejected with clear validation error codes and must not be partially stored.
+- Derived plain/search text must be extracted only from a validated BlockNote JSON description and must be sanitized or escaped before indexing, rendering, or logging to prevent XSS.
+- Node-level validation for a BlockNote JSON description must verify referenced workspace member IDs exist and that private-team references respect the viewer's private-team access rules.
+- Derived plain/search text must not include inaccessible private-team names, member references, or other text derived from BlockNote JSON description nodes the actor cannot access.
 
 Issue templates are included in v1:
 
@@ -519,6 +527,7 @@ Attachment storage:
 - V1 file size limit is 25 MB.
 - Broad file types are allowed, but executable and high-risk types are blocked.
 - Removing a file attachment removes metadata and schedules blob deletion.
+- Blocked file types include: .exe, .dll, .bat, .cmd, .sh, .ps1, .app, .dmg, .scr, .com, .pif, .jar, .vbs, .js, .msi, and files with application/x-msdownload, application/x-executable, or application/x-sh mime types.
 
 Link previews:
 
@@ -1222,6 +1231,20 @@ Pre-V1 migration rule:
 - Keep migration scripts in the project, but treat them as inactive placeholders during V1 implementation.
 - Use the current Drizzle schema plus local setup/seed workflow for development resets during V1. Generate the consolidated migration set only after the V1 schema stabilizes.
 
+### Pre-V1 schema reset workflow
+
+- When pulling schema changes under the Pre-V1 migration rule, reset local data and apply the current schema with:
+
+```bash
+docker compose down -v
+docker compose up -d postgres minio
+bunx drizzle-kit push
+bun run db:seed
+```
+
+- To detect schema drift, run `bunx drizzle-kit check` before committing schema changes and compare the Drizzle schema files against the local database state after `bunx drizzle-kit push`. If the check or push surfaces differences, update the Drizzle schema files first, rerun the reset workflow, and include the diff in the PR.
+- Re-enable migration generation only when the repo flag `V1-SCHEMA-STABLE=false` is toggled to `V1-SCHEMA-STABLE=true` in this Pre-V1 migration rule section. Until then, do not commit generated migration files.
+
 Required scripts:
 
 ```json
@@ -1299,6 +1322,15 @@ Add Vitest integration tests with a test Postgres database for:
 - Archive behavior
 - Invitation flow
 - Role restrictions
+
+### Attachment policy integration tests
+
+- Add `attachments.test.ts` once `uploadAttachment`, `downloadAttachment`, and `linkPreviewFetch` or `ssrfGuard` exist.
+- Reuse `setupTestDb`, `seedWorkspace` or `seedData`, `createUserSession`, and `createProject` helpers so tests exercise real auth/session and workspace policy paths.
+- Validate `uploadAttachment` allows an authorized issue member to upload a permitted file within the 25 MB limit.
+- Validate `uploadAttachment` rejects files over 25 MB, blocked executable/high-risk file types, and uploads by users without private-team access.
+- Validate `downloadAttachment` allows an authorized issue member and returns 403 or an equivalent denial for cross-tenant users, workspace non-members, and private-team non-members.
+- Validate `linkPreviewFetch` or `ssrfGuard` blocks localhost and private IP targets, follows at most 5 redirects, and fails on redirect loops or redirects to private IP targets.
 
 Add focused UI smoke tests for:
 
