@@ -38,9 +38,6 @@ RUN bun run build
 # copy production dependencies and source code into final image
 FROM base AS release
 ENV NODE_ENV=production
-ENV NITRO_HOST=0.0.0.0
-ENV NITRO_PORT=3008
-ENV PORT=3008
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /usr/src/app/.output ./.output
 COPY --from=prerelease /usr/src/app/public ./public
@@ -49,6 +46,4 @@ COPY --from=prerelease /usr/src/app/package.json .
 # run the app
 USER bun
 EXPOSE 3008/tcp
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-	CMD ["bun", "-e", "const port = process.env.PORT || process.env.NITRO_PORT || '3008'; fetch('http://localhost:' + port + '/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
 CMD [ "bun", "run", "start" ]
