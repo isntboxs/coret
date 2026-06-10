@@ -7,11 +7,17 @@ import { nitro } from 'nitro/vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const nitroExternalPackages = [
+	/^@sentry\//,
+	/^pino(?:\/.*)?$/,
+	/^thread-stream(?:\/.*)?$/,
+]
+
 const config = defineConfig({
 	resolve: { tsconfigPaths: true },
 	plugins: [
 		devtools(),
-		nitro({ preset: 'bun', rollupConfig: { external: [/^@sentry\//] } }),
+		nitro({ preset: 'bun', rollupConfig: { external: nitroExternalPackages } }),
 		tailwindcss(),
 		tanstackStart(),
 		viteReact(),
