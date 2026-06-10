@@ -17,7 +17,7 @@ const config = defineConfig({
 		viteReact(),
 		VitePWA({
 			outDir: '.output/public',
-			registerType: 'prompt',
+			registerType: 'autoUpdate',
 			injectRegister: false,
 			includeAssets: ['robots.txt'],
 			manifest: {
