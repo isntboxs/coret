@@ -538,7 +538,7 @@ Link previews:
 - Preview fetching happens server-side with SSRF guards.
 - Only `http` and `https` URLs are fetched.
 - Localhost, private IP ranges, link-local addresses, and cloud metadata addresses are blocked.
-- Redirects are limited and every redirect target is revalidated.
+- Redirects are limited to a maximum of 5 hops, and every redirect target is revalidated.
 - Fetches use short timeouts and response size caps.
 - Preview extraction is limited to OpenGraph, Twitter card, and standard HTML title metadata.
 - Preview metadata is cached by normalized URL.
@@ -1243,7 +1243,7 @@ bun run db:seed
 ```
 
 - To detect schema drift, run `bunx drizzle-kit check` before committing schema changes and compare the Drizzle schema files against the local database state after `bunx drizzle-kit push`. If the check or push surfaces differences, update the Drizzle schema files first, rerun the reset workflow, and include the diff in the PR.
-- Re-enable migration generation only when the repo flag `V1-SCHEMA-STABLE=false` is toggled to `V1-SCHEMA-STABLE=true` in this Pre-V1 migration rule section. Until then, do not commit generated migration files.
+- Re-enable migration generation only when the inline flag in this section `V1-SCHEMA-STABLE=false` is updated to `V1-SCHEMA-STABLE=true`. Until then, do not commit generated migration files.
 
 Required scripts:
 
