@@ -50,5 +50,5 @@ COPY --from=prerelease /usr/src/app/package.json .
 USER bun
 EXPOSE 3008/tcp
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-	CMD ["bun", "-e", "const port = process.env.PORT || process.env.NITRO_PORT || '3008'; fetch('http://127.0.0.1:' + port + '/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+	CMD ["bun", "-e", "const port = process.env.PORT || process.env.NITRO_PORT || '3008'; fetch('http://localhost:' + port + '/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
 CMD [ "bun", "run", "start" ]
