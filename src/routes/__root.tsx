@@ -1,9 +1,17 @@
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import {
+	ClientOnly,
+	HeadContent,
+	Scripts,
+	createRootRoute,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
 import type { ReactNode } from 'react'
 
+import { Toaster } from 'sonner'
+
+import { AppUpdateToast } from '#/components/app-update-toast'
 import appCss from '#/styles.css?url'
 
 export const Route = createRootRoute({
@@ -18,6 +26,10 @@ export const Route = createRootRoute({
 					content: 'width=device-width, initial-scale=1',
 				},
 				{
+					name: 'theme-color',
+					content: '#000000',
+				},
+				{
 					title: 'coret',
 				},
 			],
@@ -25,6 +37,10 @@ export const Route = createRootRoute({
 				{
 					rel: 'stylesheet',
 					href: appCss,
+				},
+				{
+					rel: 'manifest',
+					href: '/manifest.webmanifest',
 				},
 			],
 		}
@@ -40,6 +56,10 @@ function RootDocument({ children }: { children: ReactNode }) {
 			</head>
 			<body>
 				{children}
+				<ClientOnly>
+					<AppUpdateToast />
+					<Toaster position="bottom-right" richColors />
+				</ClientOnly>
 				<TanStackDevtools
 					config={{
 						position: 'bottom-right',

@@ -32,7 +32,7 @@ export default defineConfig({
 			specifier: '@tanstack/eslint-plugin-query',
 		},
 	],
-	ignorePatterns: ['dist', '.output', 'node_modules'],
+	ignorePatterns: ['dist', '.output', 'node_modules', 'src/routeTree.gen.ts'],
 	rules: {
 		// Tanstack Router rules, ref: https://tanstack.com/router/latest/docs/eslint/eslint-plugin-router
 		'eslint-tanstack-router/create-route-property-order': 'error',
