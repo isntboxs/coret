@@ -23,7 +23,7 @@ const config = defineConfig({
 		viteReact(),
 		VitePWA({
 			outDir: '.output/public',
-			registerType: 'autoUpdate',
+			registerType: 'prompt',
 			injectRegister: false,
 			includeAssets: ['robots.txt'],
 			manifest: {
@@ -54,11 +54,12 @@ const config = defineConfig({
 			workbox: {
 				cleanupOutdatedCaches: true,
 				clientsClaim: true,
-				skipWaiting: false,
 				globPatterns: ['assets/**/*.{js,css,svg,webp,woff,woff2}'],
 				navigateFallback: undefined,
 				runtimeCaching: [],
 			},
+			pwaAssets: { disabled: false, config: true },
+			devOptions: { enabled: true, suppressWarnings: true },
 		}),
 	],
 })

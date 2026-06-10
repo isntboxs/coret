@@ -36,10 +36,24 @@ export const env = createEnv({
 		NODE_ENV: z
 			.enum(['development', 'production', 'test'])
 			.default('development'),
+		DATABASE_URL: z.url(),
 		LOG_LEVEL: logLevelSchema.optional(),
 		LOG_PRETTY: booleanEnvSchema.optional(),
 		LOG_REQUEST_RESPONSE: booleanEnvSchema.default(false),
 		LOG_REQUEST_ABORT: booleanEnvSchema.default(false),
+		APP_NAME: z.string(),
+		BETTER_AUTH_URL: z.url(),
+		BETTER_AUTH_SECRET: z.string(),
+		BETTER_AUTH_TRUSTED_ORIGINS: z
+			.string()
+			.refine((cors) => cors.split(',').length > 0, {
+				message: 'At least one origin is required',
+			})
+			.transform((cors) => cors.split(',')),
+		GITHUB_CLIENT_ID: z.string(),
+		GITHUB_CLIENT_SECRET: z.string(),
+		GOOGLE_CLIENT_ID: z.string(),
+		GOOGLE_CLIENT_SECRET: z.string(),
 	},
 
 	clientPrefix: 'VITE_',

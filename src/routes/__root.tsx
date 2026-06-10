@@ -12,9 +12,14 @@ import type { ReactNode } from 'react'
 import { Toaster } from 'sonner'
 
 import { AppUpdateToast } from '#/components/app-update-toast'
+import { getAuthFn } from '#/functions/get-auth-Fn'
 import appCss from '#/styles.css?url'
 
 export const Route = createRootRoute({
+	beforeLoad: async () => {
+		const auth = await getAuthFn()
+		return { auth }
+	},
 	head: () => {
 		return {
 			meta: [
