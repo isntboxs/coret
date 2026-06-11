@@ -1,3 +1,11 @@
 export * from './auth'
+export * from './issues'
+export * from './labels'
+export * from './issue-relations'
+export * from './cycles-views'
+export * from './comments'
+export * from './attachments'
+export * from './projects'
+export * from './view-ordering'
 
 export * from './relations'

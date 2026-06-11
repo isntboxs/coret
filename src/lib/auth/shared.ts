@@ -23,6 +23,35 @@ export const organizationPluginOptions = {
 					type: 'string',
 					required: true,
 				},
+				visibility: {
+					type: ['public', 'private'],
+					defaultValue: 'public',
+					required: false,
+				},
+				creatorId: {
+					type: 'string',
+					input: false,
+					required: false,
+					references: {
+						model: 'user',
+						field: 'id',
+						onDelete: 'set null',
+					},
+				},
+				timezone: {
+					type: 'string',
+					defaultValue: 'UTC',
+					required: false,
+				},
+				metadata: {
+					type: 'string',
+					required: false,
+				},
+				archivedAt: {
+					type: 'date',
+					input: false,
+					required: false,
+				},
 			},
 		},
 	},

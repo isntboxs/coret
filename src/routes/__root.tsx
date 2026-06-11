@@ -12,6 +12,7 @@ import type { ReactNode } from 'react'
 import { Toaster } from 'sonner'
 
 import { AppUpdateToast } from '#/components/app-update-toast'
+import { ThemeProvider } from '#/components/providers/theme-provider'
 import { getAuthFn } from '#/functions/get-auth-Fn'
 import appCss from '#/styles.css?url'
 
@@ -55,16 +56,23 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: ReactNode }) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<head>
 				<HeadContent />
 			</head>
 			<body>
-				{children}
-				<ClientOnly>
-					<AppUpdateToast />
-					<Toaster position="bottom-right" richColors />
-				</ClientOnly>
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="dark"
+					disableTransitionOnChange
+					storageKey="coret-ui-theme"
+				>
+					{children}
+					<ClientOnly>
+						<AppUpdateToast />
+						<Toaster position="bottom-right" richColors />
+					</ClientOnly>
+				</ThemeProvider>
 				<TanStackDevtools
 					config={{
 						position: 'bottom-right',

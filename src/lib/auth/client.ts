@@ -1,6 +1,7 @@
 import {
 	adminClient,
 	inferAdditionalFields,
+	inferOrgAdditionalFields,
 	multiSessionClient,
 	usernameClient,
 	organizationClient,
@@ -21,6 +22,7 @@ export const authClient = createAuthClient({
 			teams: {
 				enabled: true,
 			},
+			schema: inferOrgAdditionalFields<typeof auth>(),
 		}),
 	],
 })
