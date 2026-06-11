@@ -9,6 +9,8 @@ export const createORPCContext = async ({ req }: { req: Request }) => {
 	return {
 		auth: session,
 		db,
+		req,
+		resHeaders: undefined as Headers | undefined,
 	}
 }
 

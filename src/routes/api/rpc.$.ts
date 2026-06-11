@@ -5,6 +5,7 @@ import { OpenAPIHandler } from '@orpc/openapi/fetch'
 import { OpenAPIReferencePlugin } from '@orpc/openapi/plugins'
 import { onError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
+import { ResponseHeadersPlugin } from '@orpc/server/plugins'
 import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4'
 
 import { serverLogger } from '#/lib/logger/server'
@@ -21,7 +22,7 @@ const rpcHandler = new RPCHandler(orpcRouters, {
 		}),
 	],
 
-	plugins: [createOrpcLoggingPlugin()],
+	plugins: [createOrpcLoggingPlugin(), new ResponseHeadersPlugin()],
 })
 
 const apiHandler = new OpenAPIHandler(orpcRouters, {
@@ -33,6 +34,7 @@ const apiHandler = new OpenAPIHandler(orpcRouters, {
 
 	plugins: [
 		createOrpcLoggingPlugin(),
+		new ResponseHeadersPlugin(),
 		new SmartCoercionPlugin({
 			schemaConverters: [new ZodToJsonSchemaConverter()],
 		}),
