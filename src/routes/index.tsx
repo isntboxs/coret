@@ -24,6 +24,7 @@ function Home() {
 				<Link
 					to="/login"
 					className={buttonVariants({ size: 'lg', variant: 'default' })}
+					viewTransition
 				>
 					Get started
 				</Link>

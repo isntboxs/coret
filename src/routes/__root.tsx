@@ -1,9 +1,11 @@
 import { TanStackDevtools } from '@tanstack/react-devtools'
+import type { QueryClient } from '@tanstack/react-query'
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import {
 	ClientOnly,
 	HeadContent,
 	Scripts,
-	createRootRoute,
+	createRootRouteWithContext,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
@@ -14,9 +16,15 @@ import { Toaster } from 'sonner'
 import { AppUpdateToast } from '#/components/app-update-toast'
 import { ThemeProvider } from '#/components/providers/theme-provider'
 import { getAuthFn } from '#/functions/get-auth-Fn'
+import type { orpc } from '#/orpc/client'
 import appCss from '#/styles.css?url'
 
-export const Route = createRootRoute({
+interface AppRouterContext {
+	queryClient: QueryClient
+	orpc: typeof orpc
+}
+
+export const Route = createRootRouteWithContext<AppRouterContext>()({
 	beforeLoad: async () => {
 		const auth = await getAuthFn()
 		return { auth }
@@ -81,6 +89,10 @@ function RootDocument({ children }: { children: ReactNode }) {
 						{
 							name: 'Tanstack Router',
 							render: <TanStackRouterDevtoolsPanel />,
+						},
+						{
+							name: 'Tanstack Query',
+							render: <ReactQueryDevtoolsPanel />,
 						},
 					]}
 				/>

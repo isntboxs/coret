@@ -7,8 +7,6 @@ import { env } from '#/env'
 import { serverLogger } from '#/lib/logger/server'
 import { resolveLoggerSettings } from '#/lib/logger/shared'
 
-export type ORPCLoggerContext = LoggerContext
-
 export function getOrpcLogger(context: LoggerContext) {
 	return getLogger(context)
 }

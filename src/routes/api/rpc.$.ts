@@ -8,6 +8,7 @@ import { RPCHandler } from '@orpc/server/fetch'
 import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4'
 
 import { serverLogger } from '#/lib/logger/server'
+import { createORPCContext } from '#/orpc/context'
 import { createOrpcLoggingPlugin } from '#/orpc/logger'
 import { orpcRouters } from '#/orpc/routers'
 
@@ -62,19 +63,30 @@ const apiHandler = new OpenAPIHandler(orpcRouters, {
 	],
 })
 
+const createContext = async ({ req }: { req: Request }) =>
+	createORPCContext({ req })
+
 async function handle({ request }: { request: Request }) {
 	logger.info(
 		{ method: request.method, path: new URL(request.url).pathname },
 		'Request received'
 	)
 
+	const context = await createContext({ req: request })
+
 	const rpcResult = await rpcHandler.handle(request, {
 		prefix: '/api/rpc',
+		context: {
+			...context,
+		},
 	})
 	if (rpcResult.response) return rpcResult.response
 
 	const apiResult = await apiHandler.handle(request, {
 		prefix: '/api/rpc/reference',
+		context: {
+			...context,
+		},
 	})
 
 	if (apiResult.response) return apiResult.response
