@@ -18,25 +18,7 @@ function Home() {
 
 	const orgs = useSuspenseQuery(orpc.organization.list.queryOptions())
 
-	if (!auth) {
-		return (
-			<main className="flex h-svh flex-col items-center justify-center gap-6">
-				<h1 className="text-4xl font-bold">
-					Login to get started with {env.VITE_APP_NAME}
-				</h1>
-
-				<Link
-					to="/login"
-					className={buttonVariants({ size: 'lg', variant: 'default' })}
-					viewTransition
-				>
-					Get started
-				</Link>
-			</main>
-		)
-	}
-
-	if (!auth.session.activeOrganizationId && orgs.data.length <= 1) {
+	if (auth && !auth.session.activeOrganizationId && orgs.data.length <= 1) {
 		return (
 			<main className="flex h-svh flex-col items-center justify-center gap-6">
 				<CreateOrganizationForm />
@@ -45,11 +27,18 @@ function Home() {
 	}
 
 	return (
-		<main>
-			<h1>Welcome, {auth.user.name}</h1>
-			<pre>
-				<code>{JSON.stringify(auth, null, 2)}</code>
-			</pre>
+		<main className="flex h-svh flex-col items-center justify-center gap-6">
+			<h1 className="text-4xl font-bold">
+				Login to get started with {env.VITE_APP_NAME}
+			</h1>
+
+			<Link
+				to="/login"
+				className={buttonVariants({ size: 'lg', variant: 'default' })}
+				viewTransition
+			>
+				Get started
+			</Link>
 		</main>
 	)
 }

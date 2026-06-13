@@ -1,24 +1,11 @@
 import { orpcBaseContract as baseContract } from '#/orpc/contracts/base.contract'
 import {
 	createOrganizationInputSchema,
-	listOrganizationsSchema,
-	organizationMembersSchema,
+	createOrganizationOutputSchema,
+	listOrganizationsOutputSchema,
 } from '#/orpc/schemas/organization'
 
 export const organizationContract = {
-	list: baseContract
-		.route({
-			path: '/organization/list',
-			method: 'GET',
-			summary: 'List organizations',
-			description: 'List organizations for the authenticated user.',
-			tags: ['Organization'],
-			operationId: 'listOrganizations',
-			successStatus: 200,
-			successDescription: 'Organizations listed',
-		})
-		.output(listOrganizationsSchema),
-
 	create: baseContract
 		.route({
 			path: '/organization/create',
@@ -31,5 +18,18 @@ export const organizationContract = {
 			successDescription: 'Organization created',
 		})
 		.input(createOrganizationInputSchema)
-		.output(organizationMembersSchema),
+		.output(createOrganizationOutputSchema),
+
+	list: baseContract
+		.route({
+			path: '/organization/list',
+			method: 'GET',
+			summary: 'List organizations',
+			description: 'List organizations for the authenticated user.',
+			tags: ['Organization'],
+			operationId: 'listOrganizations',
+			successStatus: 200,
+			successDescription: 'Organizations listed',
+		})
+		.output(listOrganizationsOutputSchema),
 }
