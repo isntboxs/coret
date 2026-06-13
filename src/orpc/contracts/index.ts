@@ -1,7 +1,7 @@
 import { healthContract } from '#/orpc/contracts/health.contract'
-import { organizationContract } from '#/orpc/contracts/organization.contract'
+import { workspaceContract } from '#/orpc/contracts/workspace.contract'
 
 export const orpcContracts = {
 	health: healthContract,
-	organization: organizationContract,
+	workspace: workspaceContract,
 } as const

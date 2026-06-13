@@ -29,23 +29,23 @@ import {
 import { Spinner } from '#/components/ui/spinner'
 import { env } from '#/env'
 import { orpc } from '#/orpc/client'
-import { createOrganizationInputSchema } from '#/orpc/schemas/organization'
+import { createWorkspaceInputSchema } from '#/orpc/schemas/workspace'
 
-const formSchema = createOrganizationInputSchema
+const formSchema = createWorkspaceInputSchema
 	.omit({
 		logo: true,
 		metadata: true,
-		keepCurrentActiveOrganization: true,
+		keepCurrentActiveWorkspace: true,
 	})
 	.extend({
-		keepCurrentActiveOrganization: z.boolean(),
+		keepCurrentActiveWorkspace: z.boolean(),
 	})
 
-export const CreateOrganizationForm = () => {
-	const createOrgMutation = useMutation(
-		orpc.organization.create.mutationOptions({
+export const CreateWorkspaceForm = () => {
+	const createWorkspaceMutation = useMutation(
+		orpc.workspace.create.mutationOptions({
 			onError: (error) => {
-				toast.error('Failed to create organization. Please try again later.', {
+				toast.error('Failed to create workspace. Please try again later.', {
 					description: error.message,
 				})
 			},
@@ -56,14 +56,14 @@ export const CreateOrganizationForm = () => {
 		defaultValues: {
 			name: '',
 			slug: '',
-			keepCurrentActiveOrganization: false,
+			keepCurrentActiveWorkspace: false,
 		},
 		validators: {
 			onChange: formSchema,
 			onSubmit: formSchema,
 		},
 		onSubmit: async ({ value }) => {
-			await createOrgMutation.mutateAsync(value)
+			await createWorkspaceMutation.mutateAsync(value)
 		},
 	})
 

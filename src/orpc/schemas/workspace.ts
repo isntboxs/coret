@@ -5,7 +5,7 @@ const metadataSchema = z.record(z.string(), z.unknown())
 
 const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
-const organizationFields = {
+const workspaceFields = {
 	id: z.uuid(),
 	name: z.string(),
 	slug: z.string(),
@@ -14,17 +14,17 @@ const organizationFields = {
 	metadata: z.any().optional(),
 }
 
-const organizationMemberFields = {
+const workspaceMemberFields = {
 	id: z.uuid(),
-	organizationId: z.uuid(),
+	workspaceId: z.uuid(),
 	userId: z.uuid(),
 	role: z.string(),
 	createdAt: z.date(),
 }
 
-const organizationBaseSchema = z.object(organizationFields)
+const workspaceBaseSchema = z.object(workspaceFields)
 
-export const createOrganizationInputSchema = z.object({
+export const createWorkspaceInputSchema = z.object({
 	name: z.string().min(1),
 	slug: z
 		.string()
@@ -37,16 +37,14 @@ export const createOrganizationInputSchema = z.object({
 		.transform((val) => limax(val)),
 	logo: z.string().nullable().optional(),
 	metadata: metadataSchema.optional(),
-	keepCurrentActiveOrganization: z.boolean().optional(),
+	keepCurrentActiveWorkspace: z.boolean().optional(),
 })
 
-export const createOrganizationOutputSchema = z.object({
-	...organizationFields,
-	members: z.array(z.object(organizationMemberFields).optional()),
+export const createWorkspaceOutputSchema = z.object({
+	...workspaceFields,
+	members: z.array(z.object(workspaceMemberFields).optional()),
 })
 
-export type CreateOrganizationOutput = z.infer<
-	typeof createOrganizationOutputSchema
->
+export type CreateWorkspaceOutput = z.infer<typeof createWorkspaceOutputSchema>
 
-export const listOrganizationsOutputSchema = z.array(organizationBaseSchema)
+export const listWorkspacesOutputSchema = z.array(workspaceBaseSchema)

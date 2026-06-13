@@ -4,6 +4,10 @@ Coret is a Linear-like workspace for organizing product work around teams, issue
 
 ## Language
 
+**Core Issue Loop**:
+The smallest usable product loop where workspace members create, find, and update issues inside a team's workflow.
+_Avoid_: Mini V1, basic tracker
+
 **Workspace**:
 The top-level collaboration container where members belong and shared organization settings live.
 _Avoid_: Organization, account

@@ -3,7 +3,7 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 
 import { buttonVariants } from '#/components/ui/button'
 import { env } from '#/env'
-import { CreateOrganizationForm } from '#/features/organization/components/create-organization-form'
+import { CreateWorkspaceForm } from '#/features/workspace/components/create-workspace-form'
 
 export const Route = createFileRoute('/')({
 	beforeLoad: ({ context }) => {
@@ -16,12 +16,13 @@ export const Route = createFileRoute('/')({
 function Home() {
 	const { auth, orpc } = Route.useRouteContext()
 
-	const orgs = useSuspenseQuery(orpc.organization.list.queryOptions())
+	const workspaces = useSuspenseQuery(orpc.workspace.list.queryOptions())
+	const activeWorkspaceId = auth?.session.activeOrganizationId
 
-	if (auth && !auth.session.activeOrganizationId && orgs.data.length <= 1) {
+	if (auth && !activeWorkspaceId && workspaces.data.length <= 1) {
 		return (
 			<main className="flex h-svh flex-col items-center justify-center gap-6">
-				<CreateOrganizationForm />
+				<CreateWorkspaceForm />
 			</main>
 		)
 	}
