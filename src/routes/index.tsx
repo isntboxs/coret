@@ -1,7 +1,9 @@
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link, createFileRoute } from '@tanstack/react-router'
 
 import { buttonVariants } from '#/components/ui/button'
 import { env } from '#/env'
+import { CreateOrganizationForm } from '#/features/organization/components/create-organization-form'
 
 export const Route = createFileRoute('/')({
 	beforeLoad: ({ context }) => {
@@ -12,7 +14,9 @@ export const Route = createFileRoute('/')({
 })
 
 function Home() {
-	const { auth } = Route.useRouteContext()
+	const { auth, orpc } = Route.useRouteContext()
+
+	const orgs = useSuspenseQuery(orpc.organization.list.queryOptions())
 
 	if (!auth) {
 		return (
@@ -28,6 +32,14 @@ function Home() {
 				>
 					Get started
 				</Link>
+			</main>
+		)
+	}
+
+	if (!auth.session.activeOrganizationId && orgs.data.length <= 1) {
+		return (
+			<main className="flex h-svh flex-col items-center justify-center gap-6">
+				<CreateOrganizationForm />
 			</main>
 		)
 	}

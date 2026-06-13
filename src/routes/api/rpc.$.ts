@@ -5,6 +5,7 @@ import { OpenAPIHandler } from '@orpc/openapi/fetch'
 import { OpenAPIReferencePlugin } from '@orpc/openapi/plugins'
 import { onError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
+import { ResponseHeadersPlugin } from '@orpc/server/plugins'
 import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4'
 
 import { serverLogger } from '#/lib/logger/server'
@@ -21,7 +22,7 @@ const rpcHandler = new RPCHandler(orpcRouters, {
 		}),
 	],
 
-	plugins: [createOrpcLoggingPlugin()],
+	plugins: [createOrpcLoggingPlugin(), new ResponseHeadersPlugin()],
 })
 
 const apiHandler = new OpenAPIHandler(orpcRouters, {
@@ -33,6 +34,7 @@ const apiHandler = new OpenAPIHandler(orpcRouters, {
 
 	plugins: [
 		createOrpcLoggingPlugin(),
+		new ResponseHeadersPlugin(),
 		new SmartCoercionPlugin({
 			schemaConverters: [new ZodToJsonSchemaConverter()],
 		}),
@@ -63,30 +65,22 @@ const apiHandler = new OpenAPIHandler(orpcRouters, {
 	],
 })
 
-const createContext = async ({ req }: { req: Request }) =>
-	createORPCContext({ req })
+const createContext = async ({ headers }: { headers: Headers }) =>
+	createORPCContext({ headers })
 
 async function handle({ request }: { request: Request }) {
-	logger.info(
-		{ method: request.method, path: new URL(request.url).pathname },
-		'Request received'
-	)
-
-	const context = await createContext({ req: request })
+	const context = await createContext({ headers: request.headers })
 
 	const rpcResult = await rpcHandler.handle(request, {
 		prefix: '/api/rpc',
-		context: {
-			...context,
-		},
+		context,
 	})
+
 	if (rpcResult.response) return rpcResult.response
 
 	const apiResult = await apiHandler.handle(request, {
 		prefix: '/api/rpc/reference',
-		context: {
-			...context,
-		},
+		context,
 	})
 
 	if (apiResult.response) return apiResult.response
