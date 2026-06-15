@@ -2,6 +2,7 @@ import { orpcBaseContract as baseContract } from '#/orpc/contracts/base.contract
 import {
 	createWorkspaceInputSchema,
 	createWorkspaceOutputSchema,
+	getWorkspaceOutputSchema,
 	listWorkspacesOutputSchema,
 } from '#/orpc/schemas/workspace'
 
@@ -32,4 +33,17 @@ export const workspaceContract = {
 			successDescription: 'Workspaces listed',
 		})
 		.output(listWorkspacesOutputSchema),
+
+	get: baseContract
+		.route({
+			path: '/workspace/get',
+			method: 'GET',
+			summary: 'Get full workspace',
+			description: 'Get full workspaces for the authenticated user.',
+			tags: ['Workspace'],
+			operationId: 'getWorkspace',
+			successStatus: 200,
+			successDescription: 'Workspace retrieved',
+		})
+		.output(getWorkspaceOutputSchema),
 }

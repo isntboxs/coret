@@ -48,3 +48,50 @@ export const createWorkspaceOutputSchema = z.object({
 export type CreateWorkspaceOutput = z.infer<typeof createWorkspaceOutputSchema>
 
 export const listWorkspacesOutputSchema = z.array(workspaceBaseSchema)
+
+export const getWorkspaceOutputSchema = z
+	.object({
+		...workspaceFields,
+		members: z.array(
+			z.object(workspaceMemberFields).extend({
+				teamId: z.uuid().optional(),
+				user: z.object({
+					id: z.uuid(),
+					email: z.email(),
+					name: z.string(),
+					image: z.string().optional(),
+				}),
+			})
+		),
+		invitations: z.array(
+			z.object({
+				id: z.string(),
+				workspaceId: z.string(),
+				email: z.email(),
+				role: z.string(),
+				status: z.string(),
+				inviterId: z.string(),
+				teamId: z.string().optional(),
+				expiresAt: z.date(),
+				createdAt: z.date(),
+			})
+		),
+		teams: z.array(
+			z.object({
+				id: z.string(),
+				name: z.string(),
+				workspaceId: z.string(),
+				createdAt: z.date(),
+				updatedAt: z.date().optional(),
+				key: z.string(),
+				visibility: z.string().optional(),
+				creatorId: z.string().optional(),
+				timezone: z.string().optional(),
+				metadata: z.string().optional(),
+				archivedAt: z.date().optional(),
+			})
+		),
+	})
+	.nullable()
+
+export type GetWorkspaceOutput = z.infer<typeof getWorkspaceOutputSchema>
