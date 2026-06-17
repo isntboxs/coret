@@ -47,6 +47,7 @@ export const userTable = pgTable('user', {
 	banExpires: timestamp('ban_expires'),
 	username: text('username').unique(),
 	displayUsername: text('display_username'),
+	title: text('title'),
 })
 
 export const organizationTable = pgTable(

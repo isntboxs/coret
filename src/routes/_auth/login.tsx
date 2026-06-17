@@ -21,7 +21,6 @@ import {
 } from '#/components/ui/card'
 import { Spinner } from '#/components/ui/spinner'
 import { env } from '#/env'
-import { sanitizeAuthCallbackURL } from '#/lib/auth-redirect'
 import { authClient } from '#/lib/auth/client'
 import { cn } from '#/lib/utils'
 
@@ -46,8 +45,7 @@ function RouteComponent() {
 		SocialButton['provider'] | null
 	>(null)
 
-	const search = Route.useSearch()
-	const callbackURL = sanitizeAuthCallbackURL(search.callbackURL)
+	const callbackURL = '/'
 
 	const handleSignIn = async (provider: SocialButton['provider']) => {
 		await authClient.signIn.social({

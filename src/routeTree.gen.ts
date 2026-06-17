@@ -9,12 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as WorkspaceSlugWelcomeRouteImport } from './routes/$workspaceSlug/welcome'
 import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
+import { Route as WorkspaceSlugTeamTeamKeyActiveRouteImport } from './routes/$workspaceSlug/team/$teamKey/active'
 
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -30,6 +38,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkspaceSlugWelcomeRoute = WorkspaceSlugWelcomeRouteImport.update({
+  id: '/$workspaceSlug/welcome',
+  path: '/$workspaceSlug/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
   id: '/api/rpc/$',
   path: '/api/rpc/$',
@@ -40,53 +53,97 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkspaceSlugTeamTeamKeyActiveRoute =
+  WorkspaceSlugTeamTeamKeyActiveRouteImport.update({
+    id: '/$workspaceSlug/team/$teamKey/active',
+    path: '/$workspaceSlug/team/$teamKey/active',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRoute
+  '/$workspaceSlug/welcome': typeof WorkspaceSlugWelcomeRoute
   '/login': typeof AuthLoginRoute
   '/api/health': typeof ApiHealthRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/$workspaceSlug/team/$teamKey/active': typeof WorkspaceSlugTeamTeamKeyActiveRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRoute
+  '/$workspaceSlug/welcome': typeof WorkspaceSlugWelcomeRoute
   '/login': typeof AuthLoginRoute
   '/api/health': typeof ApiHealthRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/$workspaceSlug/team/$teamKey/active': typeof WorkspaceSlugTeamTeamKeyActiveRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRoute
+  '/$workspaceSlug/welcome': typeof WorkspaceSlugWelcomeRoute
   '/_auth/login': typeof AuthLoginRoute
   '/api/health': typeof ApiHealthRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
+  '/$workspaceSlug/team/$teamKey/active': typeof WorkspaceSlugTeamTeamKeyActiveRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/api/health' | '/api/auth/$' | '/api/rpc/$'
+  fullPaths:
+    | '/'
+    | '/onboarding'
+    | '/$workspaceSlug/welcome'
+    | '/login'
+    | '/api/health'
+    | '/api/auth/$'
+    | '/api/rpc/$'
+    | '/$workspaceSlug/team/$teamKey/active'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/api/health' | '/api/auth/$' | '/api/rpc/$'
+  to:
+    | '/'
+    | '/onboarding'
+    | '/$workspaceSlug/welcome'
+    | '/login'
+    | '/api/health'
+    | '/api/auth/$'
+    | '/api/rpc/$'
+    | '/$workspaceSlug/team/$teamKey/active'
   id:
     | '__root__'
     | '/'
+    | '/onboarding'
+    | '/$workspaceSlug/welcome'
     | '/_auth/login'
     | '/api/health'
     | '/api/auth/$'
     | '/api/rpc/$'
+    | '/$workspaceSlug/team/$teamKey/active'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  OnboardingRoute: typeof OnboardingRoute
+  WorkspaceSlugWelcomeRoute: typeof WorkspaceSlugWelcomeRoute
   AuthLoginRoute: typeof AuthLoginRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
+  WorkspaceSlugTeamTeamKeyActiveRoute: typeof WorkspaceSlugTeamTeamKeyActiveRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -108,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$workspaceSlug/welcome': {
+      id: '/$workspaceSlug/welcome'
+      path: '/$workspaceSlug/welcome'
+      fullPath: '/$workspaceSlug/welcome'
+      preLoaderRoute: typeof WorkspaceSlugWelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/rpc/$': {
       id: '/api/rpc/$'
       path: '/api/rpc/$'
@@ -122,15 +186,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$workspaceSlug/team/$teamKey/active': {
+      id: '/$workspaceSlug/team/$teamKey/active'
+      path: '/$workspaceSlug/team/$teamKey/active'
+      fullPath: '/$workspaceSlug/team/$teamKey/active'
+      preLoaderRoute: typeof WorkspaceSlugTeamTeamKeyActiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  OnboardingRoute: OnboardingRoute,
+  WorkspaceSlugWelcomeRoute: WorkspaceSlugWelcomeRoute,
   AuthLoginRoute: AuthLoginRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
+  WorkspaceSlugTeamTeamKeyActiveRoute: WorkspaceSlugTeamTeamKeyActiveRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

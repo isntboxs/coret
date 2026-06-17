@@ -290,7 +290,7 @@ function serializeUrl(value: unknown) {
 	}
 
 	if (value instanceof URL) {
-		return value.pathname
+		return stripQueryAndHash(value.href)
 	}
 
 	if (isRecord(value) && typeof value.href === 'string') {
@@ -302,7 +302,8 @@ function serializeUrl(value: unknown) {
 
 function stripQueryAndHash(raw: string) {
 	try {
-		return new URL(raw).pathname
+		const url = new URL(raw)
+		return `${url.origin}${url.pathname}`
 	} catch {
 		return raw.split('?')[0]?.split('#')[0] ?? raw
 	}

@@ -1,8 +1,11 @@
 import { orpcBaseContract as baseContract } from '#/orpc/contracts/base.contract'
 import {
+	createWorkspaceWithDefaultTeamInputSchema,
+	createWorkspaceWithDefaultTeamOutputSchema,
 	createWorkspaceInputSchema,
 	createWorkspaceOutputSchema,
 	listWorkspacesOutputSchema,
+	workspaceHomeStateOutputSchema,
 } from '#/orpc/schemas/workspace'
 
 export const workspaceContract = {
@@ -19,6 +22,35 @@ export const workspaceContract = {
 		})
 		.input(createWorkspaceInputSchema)
 		.output(createWorkspaceOutputSchema),
+
+	createWithDefaultTeam: baseContract
+		.route({
+			path: '/workspace/create-with-default-team',
+			method: 'POST',
+			summary: 'Create workspace with default team',
+			description:
+				'Create a Workspace and its Default Team for the authenticated user.',
+			tags: ['Workspace'],
+			operationId: 'createWorkspaceWithDefaultTeam',
+			successStatus: 200,
+			successDescription: 'Workspace and Default Team created',
+		})
+		.input(createWorkspaceWithDefaultTeamInputSchema)
+		.output(createWorkspaceWithDefaultTeamOutputSchema),
+
+	homeState: baseContract
+		.route({
+			path: '/workspace/home-state',
+			method: 'GET',
+			summary: 'Get workspace home state',
+			description:
+				'Resolve whether the authenticated user needs Workspace Creation or should be redirected to the active Team.',
+			tags: ['Workspace'],
+			operationId: 'getWorkspaceHomeState',
+			successStatus: 200,
+			successDescription: 'Workspace home state resolved',
+		})
+		.output(workspaceHomeStateOutputSchema),
 
 	list: baseContract
 		.route({

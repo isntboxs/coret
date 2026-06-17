@@ -6,10 +6,14 @@ import type {
 
 import { orpcBase } from '#/orpc/base'
 import { healthRouter } from '#/orpc/routers/health.router'
+import { teamRouter } from '#/orpc/routers/team.router'
+import { welcomeRouter } from '#/orpc/routers/welcome.router'
 import { workspaceRouter } from '#/orpc/routers/workspace.router'
 
 export const orpcRouters = orpcBase.router({
 	health: healthRouter,
+	team: teamRouter,
+	welcome: welcomeRouter,
 	workspace: workspaceRouter,
 })
 

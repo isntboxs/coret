@@ -1,20 +1,22 @@
 import { useForm } from '@tanstack/react-form'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate, useRouter } from '@tanstack/react-router'
 
 import limax from 'limax'
 import { toast } from 'sonner'
-import { z } from 'zod'
 
 import { Button } from '#/components/ui/button'
 import {
 	Card,
 	CardContent,
 	CardDescription,
+	CardFooter,
 	CardHeader,
 	CardTitle,
 } from '#/components/ui/card'
 import {
 	Field,
+	FieldDescription,
 	FieldError,
 	FieldGroup,
 	FieldLabel,
@@ -26,24 +28,20 @@ import {
 	InputGroupInput,
 	InputGroupText,
 } from '#/components/ui/input-group'
+import { NativeSelect, NativeSelectOption } from '#/components/ui/native-select'
 import { Spinner } from '#/components/ui/spinner'
 import { env } from '#/env'
 import { orpc } from '#/orpc/client'
-import { createWorkspaceInputSchema } from '#/orpc/schemas/workspace'
+import { createWorkspaceWithDefaultTeamInputSchema } from '#/orpc/schemas/workspace'
 
-const formSchema = createWorkspaceInputSchema
-	.omit({
-		logo: true,
-		metadata: true,
-		keepCurrentActiveWorkspace: true,
-	})
-	.extend({
-		keepCurrentActiveWorkspace: z.boolean(),
-	})
+const formSchema = createWorkspaceWithDefaultTeamInputSchema
 
 export const CreateWorkspaceForm = () => {
+	const router = useRouter()
+	const navigate = useNavigate()
+	const queryClient = useQueryClient()
 	const createWorkspaceMutation = useMutation(
-		orpc.workspace.create.mutationOptions({
+		orpc.workspace.createWithDefaultTeam.mutationOptions({
 			onError: (error) => {
 				toast.error('Failed to create workspace. Please try again later.', {
 					description: error.message,
@@ -56,23 +54,32 @@ export const CreateWorkspaceForm = () => {
 		defaultValues: {
 			name: '',
 			slug: '',
-			keepCurrentActiveWorkspace: false,
+			region: undefined,
+		} as {
+			name: string
+			slug: string
+			region?: 'us' | 'eu' | 'apac'
 		},
 		validators: {
 			onChange: formSchema,
 			onSubmit: formSchema,
 		},
 		onSubmit: async ({ value }) => {
-			await createWorkspaceMutation.mutateAsync(value)
+			const result = await createWorkspaceMutation.mutateAsync(value)
+			await queryClient.invalidateQueries()
+			await router.invalidate({ sync: true })
+			await navigate({ href: result.redirectTo })
 		},
 	})
 
 	return (
 		<Card className="w-full max-w-md bg-transparent ring-0">
-			<CardHeader className="text-center">
-				<CardTitle className="text-xl font-bold">Create a workspace</CardTitle>
+			<CardHeader>
+				<CardTitle className="text-xl font-semibold">
+					Create a Workspace
+				</CardTitle>
 				<CardDescription className="text-sm text-muted-foreground">
-					Move work across teams
+					Your Default Team and starter workflow are created automatically.
 				</CardDescription>
 			</CardHeader>
 
@@ -93,18 +100,24 @@ export const CreateWorkspaceForm = () => {
 									field.state.meta.isTouched && !field.state.meta.isValid
 								return (
 									<Field data-invalid={isInvalid}>
-										<FieldLabel htmlFor={field.name}>Name</FieldLabel>
+										<FieldLabel htmlFor={field.name}>Workspace name</FieldLabel>
 
 										<Input
 											id={field.name}
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
+											onChange={(e) => {
+												field.handleChange(e.target.value)
+											}}
 											aria-invalid={isInvalid}
-											placeholder="Your workspace name"
-											autoComplete="off"
+											placeholder="Acme Product"
+											autoComplete="organization"
 										/>
+
+										<FieldDescription>
+											The Default Team will use this name.
+										</FieldDescription>
 
 										{isInvalid && (
 											<FieldError errors={field.state.meta.errors} />
@@ -122,9 +135,12 @@ export const CreateWorkspaceForm = () => {
 									children={(field) => {
 										const isInvalid =
 											field.state.meta.isTouched && !field.state.meta.isValid
+										const value = field.state.value || limax(name)
 										return (
 											<Field data-invalid={isInvalid}>
-												<FieldLabel htmlFor={field.name}>URL</FieldLabel>
+												<FieldLabel htmlFor={field.name}>
+													Workspace URL
+												</FieldLabel>
 
 												<InputGroup>
 													<InputGroupAddon>
@@ -134,11 +150,13 @@ export const CreateWorkspaceForm = () => {
 													<InputGroupInput
 														id={field.name}
 														name={field.name}
-														value={field.state.value || limax(name)}
+														value={value}
 														onBlur={field.handleBlur}
-														onChange={(e) => field.handleChange(e.target.value)}
+														onChange={(e) => {
+															field.handleChange(e.target.value)
+														}}
 														aria-invalid={isInvalid}
-														placeholder="workspace-name"
+														placeholder="acme-product"
 														autoComplete="off"
 														className="pl-0.5"
 													/>
@@ -153,24 +171,79 @@ export const CreateWorkspaceForm = () => {
 								/>
 							)}
 						/>
-					</FieldGroup>
 
-					<form.Subscribe
-						selector={(state) => [state.canSubmit, state.isSubmitting]}
-						children={([canSubmit, isSubmitting]) => (
+						<form.Field
+							name="region"
+							children={(field) => {
+								const isInvalid =
+									field.state.meta.isTouched && !field.state.meta.isValid
+								return (
+									<Field data-invalid={isInvalid}>
+										<FieldLabel htmlFor={field.name}>Region</FieldLabel>
+										<NativeSelect
+											id={field.name}
+											name={field.name}
+											value={field.state.value ?? ''}
+											onBlur={field.handleBlur}
+											onChange={(e) => {
+												field.handleChange(
+													e.target.value
+														? (e.target.value as 'us' | 'eu' | 'apac')
+														: undefined
+												)
+											}}
+											aria-invalid={isInvalid}
+											className="w-full"
+										>
+											<NativeSelectOption value="">
+												No preference
+											</NativeSelectOption>
+											<NativeSelectOption value="us">
+												United States
+											</NativeSelectOption>
+											<NativeSelectOption value="eu">Europe</NativeSelectOption>
+											<NativeSelectOption value="apac">
+												Asia-Pacific
+											</NativeSelectOption>
+										</NativeSelect>
+										<FieldDescription>
+											Stored as a Workspace preference for future hosting
+											choices.
+										</FieldDescription>
+										{isInvalid && (
+											<FieldError errors={field.state.meta.errors} />
+										)}
+									</Field>
+								)
+							}}
+						/>
+					</FieldGroup>
+				</form>
+			</CardContent>
+
+			<CardFooter>
+				<form.Subscribe
+					selector={(state) => [state.canSubmit, state.isSubmitting]}
+					children={([canSubmit, isSubmitting]) => {
+						const isPending = isSubmitting
+							? true
+							: createWorkspaceMutation.isPending
+
+						return (
 							<Button
 								form="create-workspace-form"
 								type="submit"
-								className="mt-8 w-full"
+								className="w-full"
 								size="lg"
-								disabled={!canSubmit || isSubmitting}
+								disabled={!canSubmit || isPending}
 							>
-								{isSubmitting ? <Spinner /> : 'Create workspace'}
+								{isPending ? <Spinner data-icon="inline-start" /> : null}
+								Create Workspace
 							</Button>
-						)}
-					/>
-				</form>
-			</CardContent>
+						)
+					}}
+				/>
+			</CardFooter>
 		</Card>
 	)
 }

@@ -24,6 +24,8 @@ const workspaceMemberFields = {
 
 const workspaceBaseSchema = z.object(workspaceFields)
 
+export const regionSchema = z.enum(['us', 'eu', 'apac'])
+
 export const createWorkspaceInputSchema = z.object({
 	name: z.string().min(1),
 	slug: z
@@ -40,11 +42,75 @@ export const createWorkspaceInputSchema = z.object({
 	keepCurrentActiveWorkspace: z.boolean().optional(),
 })
 
+export const createWorkspaceWithDefaultTeamInputSchema = z.object({
+	name: z.string().min(1),
+	slug: z
+		.string()
+		.min(1)
+		.max(100)
+		.regex(slugRegex, {
+			error:
+				'Slug must be lowercase alphanumeric with hyphens between segments, no leading/trailing/consecutive hyphens',
+		})
+		.transform((val) => limax(val)),
+	region: regionSchema.optional(),
+})
+
 export const createWorkspaceOutputSchema = z.object({
 	...workspaceFields,
 	members: z.array(z.object(workspaceMemberFields).optional()),
 })
 
 export type CreateWorkspaceOutput = z.infer<typeof createWorkspaceOutputSchema>
+
+export const workflowStatusOutputSchema = z.object({
+	id: z.uuid(),
+	name: z.string(),
+	color: z.string(),
+	category: z.enum([
+		'backlog',
+		'unstarted',
+		'started',
+		'completed',
+		'canceled',
+		'duplicate',
+	]),
+	position: z.number(),
+	isDefault: z.boolean(),
+	teamId: z.uuid(),
+	createdAt: z.date(),
+	updatedAt: z.date(),
+})
+
+export const defaultTeamOutputSchema = z.object({
+	id: z.uuid(),
+	name: z.string(),
+	key: z.string(),
+	visibility: z.enum(['public', 'private']),
+	timezone: z.string(),
+	organizationId: z.uuid(),
+	createdAt: z.date(),
+	updatedAt: z.date().nullable().optional(),
+})
+
+export const createWorkspaceWithDefaultTeamOutputSchema = z.object({
+	workspace: workspaceBaseSchema,
+	defaultTeam: defaultTeamOutputSchema,
+	workflowStatuses: z.array(workflowStatusOutputSchema),
+	welcomeRequired: z.literal(true),
+	redirectTo: z.string(),
+})
+
+export const workspaceHomeStateOutputSchema = z.discriminatedUnion('state', [
+	z.object({
+		state: z.literal('needs_workspace'),
+	}),
+	z.object({
+		state: z.literal('redirect'),
+		workspace: workspaceBaseSchema,
+		team: defaultTeamOutputSchema,
+		redirectTo: z.string(),
+	}),
+])
 
 export const listWorkspacesOutputSchema = z.array(workspaceBaseSchema)

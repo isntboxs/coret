@@ -7,5 +7,6 @@ export * from './comments'
 export * from './attachments'
 export * from './projects'
 export * from './view-ordering'
+export * from './welcome'
 
 export * from './relations'

@@ -37,6 +37,7 @@ import {
 	projectMemberTable,
 } from '#/db/schemas/projects'
 import { issueViewOrderingTable } from '#/db/schemas/view-ordering'
+import { welcomeProgressTable } from '#/db/schemas/welcome'
 
 export const userRelations = relations(userTable, ({ many }) => {
 	return {
@@ -61,6 +62,7 @@ export const userRelations = relations(userTable, ({ many }) => {
 		projectMemberships: many(projectMemberTable),
 		createdIssueViews: many(issueViewTable),
 		createdIssueRelations: many(issueRelationTable),
+		welcomeProgress: many(welcomeProgressTable),
 	}
 })
 
@@ -109,6 +111,7 @@ export const organizationRelations = relations(
 			labels: many(labelTable),
 			issueTemplates: many(issueTemplateTable),
 			issueViews: many(issueViewTable),
+			welcomeProgress: many(welcomeProgressTable),
 		}
 	}
 )
