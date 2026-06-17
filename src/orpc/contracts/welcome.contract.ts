@@ -6,7 +6,6 @@ import {
 	welcomeInviteTeammatesInputSchema,
 	welcomeInviteTeammatesOutputSchema,
 	welcomeMutationOutputSchema,
-	welcomeSkipSlackInputSchema,
 	welcomeUpdateProfileInputSchema,
 	welcomeUpdateSubscriptionsInputSchema,
 } from '#/orpc/schemas/welcome'
@@ -67,20 +66,6 @@ export const welcomeContract = {
 			successDescription: 'Welcome GitHub step saved',
 		})
 		.input(welcomeConnectGithubInputSchema)
-		.output(welcomeMutationOutputSchema),
-
-	skipSlack: baseContract
-		.route({
-			path: '/welcome/skip-slack',
-			method: 'POST',
-			summary: 'Skip Welcome Slack step',
-			description: 'Persist Slack skip state.',
-			tags: ['Welcome'],
-			operationId: 'skipWelcomeSlack',
-			successStatus: 200,
-			successDescription: 'Welcome Slack step skipped',
-		})
-		.input(welcomeSkipSlackInputSchema)
 		.output(welcomeMutationOutputSchema),
 
 	updateSubscriptions: baseContract

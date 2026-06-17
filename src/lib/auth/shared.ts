@@ -38,11 +38,6 @@ export const organizationPluginOptions = {
 						onDelete: 'set null',
 					},
 				},
-				timezone: {
-					type: 'string',
-					defaultValue: 'UTC',
-					required: false,
-				},
 				metadata: {
 					type: 'string',
 					required: false,

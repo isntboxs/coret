@@ -82,7 +82,6 @@ export const teamTable = pgTable(
 		creatorId: uuid('creator_id').references(() => userTable.id, {
 			onDelete: 'set null',
 		}),
-		timezone: text('timezone').default('UTC').notNull(),
 		metadata: text('metadata'),
 		archivedAt: timestamp('archived_at'),
 	},

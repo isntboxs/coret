@@ -12,12 +12,11 @@ export const welcomeProgressOutputSchema = z.object({
 	id: z.uuid(),
 	organizationId: z.uuid(),
 	userId: z.uuid(),
-	currentStep: z.number().int().min(1).max(5),
+	currentStep: z.number().int().min(1).max(4),
 	profileCompletedAt: z.date().nullable(),
 	invitationsCompletedAt: z.date().nullable(),
 	githubCompletedAt: z.date().nullable(),
 	githubSkippedAt: z.date().nullable(),
-	slackSkippedAt: z.date().nullable(),
 	subscriptionsCompletedAt: z.date().nullable(),
 	finishedAt: z.date().nullable(),
 	inviteEmails: z.array(z.string()).nullable(),
@@ -72,8 +71,6 @@ export const welcomeConnectGithubInputSchema = z.object({
 	...workspaceSlugInput,
 	action: z.enum(['started', 'skip']),
 })
-
-export const welcomeSkipSlackInputSchema = z.object(workspaceSlugInput)
 
 export const welcomeUpdateSubscriptionsInputSchema = z.object({
 	...workspaceSlugInput,

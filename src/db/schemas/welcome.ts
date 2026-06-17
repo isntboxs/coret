@@ -30,7 +30,6 @@ export const welcomeProgressTable = pgTable(
 		invitationsCompletedAt: timestamp('invitations_completed_at'),
 		githubCompletedAt: timestamp('github_completed_at'),
 		githubSkippedAt: timestamp('github_skipped_at'),
-		slackSkippedAt: timestamp('slack_skipped_at'),
 		subscriptionsCompletedAt: timestamp('subscriptions_completed_at'),
 		finishedAt: timestamp('finished_at'),
 		inviteEmails: jsonb('invite_emails'),

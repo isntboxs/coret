@@ -20,8 +20,6 @@ type StatusCategory =
 	| 'completed'
 	| 'canceled'
 
-export const DEFAULT_TEAM_TIMEZONE = 'UTC'
-
 export const DEFAULT_WORKFLOW_STATUSES = [
 	{
 		name: 'Backlog',

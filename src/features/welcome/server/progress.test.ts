@@ -14,7 +14,6 @@ function progress(overrides: Partial<WelcomeProgress> = {}): WelcomeProgress {
 		invitationsCompletedAt: null,
 		githubCompletedAt: null,
 		githubSkippedAt: null,
-		slackSkippedAt: null,
 		subscriptionsCompletedAt: null,
 		finishedAt: null,
 		...overrides,
@@ -50,17 +49,15 @@ describe('welcome progress', () => {
 					profileCompletedAt: now,
 					invitationsCompletedAt: now,
 					githubCompletedAt: now,
-					slackSkippedAt: now,
 				})
 			)
-		).toBe(5)
+		).toBe(4)
 		expect(
 			getCurrentWelcomeStep(
 				progress({
 					profileCompletedAt: now,
 					invitationsCompletedAt: now,
 					githubCompletedAt: now,
-					slackSkippedAt: now,
 					subscriptionsCompletedAt: now,
 				})
 			)

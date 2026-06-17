@@ -28,7 +28,6 @@ import {
 	InputGroupInput,
 	InputGroupText,
 } from '#/components/ui/input-group'
-import { NativeSelect, NativeSelectOption } from '#/components/ui/native-select'
 import { Spinner } from '#/components/ui/spinner'
 import { env } from '#/env'
 import { orpc } from '#/orpc/client'
@@ -54,11 +53,6 @@ export const CreateWorkspaceForm = () => {
 		defaultValues: {
 			name: '',
 			slug: '',
-			region: undefined,
-		} as {
-			name: string
-			slug: string
-			region?: 'us' | 'eu' | 'apac'
 		},
 		validators: {
 			onChange: formSchema,
@@ -170,52 +164,6 @@ export const CreateWorkspaceForm = () => {
 									}}
 								/>
 							)}
-						/>
-
-						<form.Field
-							name="region"
-							children={(field) => {
-								const isInvalid =
-									field.state.meta.isTouched && !field.state.meta.isValid
-								return (
-									<Field data-invalid={isInvalid}>
-										<FieldLabel htmlFor={field.name}>Region</FieldLabel>
-										<NativeSelect
-											id={field.name}
-											name={field.name}
-											value={field.state.value ?? ''}
-											onBlur={field.handleBlur}
-											onChange={(e) => {
-												field.handleChange(
-													e.target.value
-														? (e.target.value as 'us' | 'eu' | 'apac')
-														: undefined
-												)
-											}}
-											aria-invalid={isInvalid}
-											className="w-full"
-										>
-											<NativeSelectOption value="">
-												No preference
-											</NativeSelectOption>
-											<NativeSelectOption value="us">
-												United States
-											</NativeSelectOption>
-											<NativeSelectOption value="eu">Europe</NativeSelectOption>
-											<NativeSelectOption value="apac">
-												Asia-Pacific
-											</NativeSelectOption>
-										</NativeSelect>
-										<FieldDescription>
-											Stored as a Workspace preference for future hosting
-											choices.
-										</FieldDescription>
-										{isInvalid && (
-											<FieldError errors={field.state.meta.errors} />
-										)}
-									</Field>
-								)
-							}}
 						/>
 					</FieldGroup>
 				</form>

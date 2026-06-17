@@ -54,7 +54,6 @@ function ActiveTeamRoute() {
 					</div>
 					<div className="flex flex-wrap gap-2">
 						<Badge variant="outline">{team.visibility}</Badge>
-						<Badge variant="outline">{team.timezone}</Badge>
 					</div>
 				</header>
 

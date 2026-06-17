@@ -24,8 +24,6 @@ const workspaceMemberFields = {
 
 const workspaceBaseSchema = z.object(workspaceFields)
 
-export const regionSchema = z.enum(['us', 'eu', 'apac'])
-
 export const createWorkspaceInputSchema = z.object({
 	name: z.string().min(1),
 	slug: z
@@ -53,7 +51,6 @@ export const createWorkspaceWithDefaultTeamInputSchema = z.object({
 				'Slug must be lowercase alphanumeric with hyphens between segments, no leading/trailing/consecutive hyphens',
 		})
 		.transform((val) => limax(val)),
-	region: regionSchema.optional(),
 })
 
 export const createWorkspaceOutputSchema = z.object({
@@ -87,7 +84,6 @@ export const defaultTeamOutputSchema = z.object({
 	name: z.string(),
 	key: z.string(),
 	visibility: z.enum(['public', 'private']),
-	timezone: z.string(),
 	organizationId: z.uuid(),
 	createdAt: z.date(),
 	updatedAt: z.date().nullable().optional(),

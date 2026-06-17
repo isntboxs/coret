@@ -1,17 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-	DEFAULT_TEAM_TIMEZONE,
 	DEFAULT_WORKFLOW_STATUSES,
 	generateTeamKeyFromExists,
 	getTeamKeyBase,
 } from '#/features/workspace/server/defaults'
 
 describe('workspace defaults', () => {
-	it('defines the default team timezone', () => {
-		expect(DEFAULT_TEAM_TIMEZONE).toBe('UTC')
-	})
-
 	it('defines the default workflow status sequence', () => {
 		expect(DEFAULT_WORKFLOW_STATUSES).toEqual([
 			{

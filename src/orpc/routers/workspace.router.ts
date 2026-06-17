@@ -11,7 +11,6 @@ import {
 import { issueStatusTable } from '#/db/schemas/issues'
 import { welcomeProgressTable } from '#/db/schemas/welcome'
 import {
-	DEFAULT_TEAM_TIMEZONE,
 	DEFAULT_WORKFLOW_STATUSES,
 	generateTeamKey,
 } from '#/features/workspace/server/defaults'
@@ -55,11 +54,6 @@ function applyResponseHeaders(headers: Headers, context: ORPCContext) {
 	})
 }
 
-function metadataWithRegion(region: 'us' | 'eu' | 'apac' | undefined) {
-	if (!region) return undefined
-	return { region }
-}
-
 function activeTeamPath(workspaceSlug: string, teamKey: string) {
 	return `/${workspaceSlug}/team/${teamKey}/active`
 }
@@ -96,7 +90,6 @@ export const workspaceRouter = {
 						body: {
 							name: input.name,
 							slug: input.slug,
-							metadata: metadataWithRegion(input.region),
 							keepCurrentActiveOrganization: true,
 						},
 						returnHeaders: true,
@@ -126,7 +119,6 @@ export const workspaceRouter = {
 							key: teamKey,
 							visibility: 'public',
 							creatorId: context.auth.user.id,
-							timezone: DEFAULT_TEAM_TIMEZONE,
 						})
 						.returning()
 

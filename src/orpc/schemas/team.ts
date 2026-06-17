@@ -13,7 +13,6 @@ export const teamOutputSchema = z.object({
 	name: z.string(),
 	key: z.string(),
 	visibility: z.enum(['public', 'private']),
-	timezone: z.string(),
 	organizationId: z.uuid(),
 	createdAt: z.date(),
 	updatedAt: z.date().nullable().optional(),

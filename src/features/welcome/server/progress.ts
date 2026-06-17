@@ -3,19 +3,17 @@ export interface WelcomeProgress {
 	invitationsCompletedAt: Date | null
 	githubCompletedAt: Date | null
 	githubSkippedAt: Date | null
-	slackSkippedAt: Date | null
 	subscriptionsCompletedAt: Date | null
 	finishedAt: Date | null
 }
 
-export const WELCOME_TOTAL_STEPS = 5
+export const WELCOME_TOTAL_STEPS = 4
 
 export function getCurrentWelcomeStep(progress: WelcomeProgress) {
 	if (!progress.profileCompletedAt) return 1
 	if (!progress.invitationsCompletedAt) return 2
 	if (!progress.githubCompletedAt && !progress.githubSkippedAt) return 3
-	if (!progress.slackSkippedAt) return 4
-	if (!progress.subscriptionsCompletedAt) return 5
+	if (!progress.subscriptionsCompletedAt) return 4
 
 	return WELCOME_TOTAL_STEPS
 }

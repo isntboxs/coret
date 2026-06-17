@@ -4,7 +4,6 @@ import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 
 import {
 	IconBrandGithub,
-	IconBrandSlack,
 	IconCheck,
 	IconCopy,
 	IconMail,
@@ -59,7 +58,7 @@ function WelcomeRoute() {
 	const navigate = useNavigate()
 	const queryClient = useQueryClient()
 	const currentStep = initial.progress.currentStep
-	const progressValue = (currentStep / 5) * 100
+	const progressValue = (currentStep / 4) * 100
 
 	const invalidate = async () => {
 		await queryClient.invalidateQueries()
@@ -87,15 +86,6 @@ function WelcomeRoute() {
 		orpc.welcome.connectGithub.mutationOptions({
 			onSuccess: async () => {
 				await invalidate()
-			},
-			onError: (error) => toast.error(error.message),
-		})
-	)
-	const slackMutation = useMutation(
-		orpc.welcome.skipSlack.mutationOptions({
-			onSuccess: async () => {
-				await invalidate()
-				toast.success('Slack skipped')
 			},
 			onError: (error) => toast.error(error.message),
 		})
@@ -200,7 +190,7 @@ function WelcomeRoute() {
 							</h1>
 						</div>
 						<div className="text-right text-sm text-muted-foreground">
-							Step {currentStep} of 5
+							Step {currentStep} of 4
 						</div>
 					</div>
 					<Progress value={progressValue} />
@@ -211,8 +201,7 @@ function WelcomeRoute() {
 						<StepMarker step={1} current={currentStep} label="Profile" />
 						<StepMarker step={2} current={currentStep} label="Invite" />
 						<StepMarker step={3} current={currentStep} label="GitHub" />
-						<StepMarker step={4} current={currentStep} label="Slack" />
-						<StepMarker step={5} current={currentStep} label="Updates" />
+						<StepMarker step={4} current={currentStep} label="Updates" />
 					</nav>
 
 					<div className="flex flex-col gap-5">
@@ -432,33 +421,6 @@ function WelcomeRoute() {
 									disabled={githubMutation.isPending}
 								>
 									Skip
-								</Button>
-							</CardFooter>
-						</Card>
-
-						<Card>
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-lg">
-									<IconBrandSlack data-icon="inline-start" />
-									Slack
-								</CardTitle>
-								<CardDescription>
-									Slack is deferred for this slice. Continue without
-									credentials.
-								</CardDescription>
-							</CardHeader>
-							<CardFooter>
-								<Button
-									type="button"
-									variant="outline"
-									onClick={() =>
-										void slackMutation.mutateAsync({
-											workspaceSlug: params.workspaceSlug,
-										})
-									}
-									disabled={slackMutation.isPending}
-								>
-									Skip Slack
 								</Button>
 							</CardFooter>
 						</Card>

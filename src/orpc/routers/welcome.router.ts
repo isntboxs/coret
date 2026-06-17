@@ -308,35 +308,6 @@ export const welcomeRouter = {
 		}
 	),
 
-	skipSlack: protectedProcedure.welcome.skipSlack.handler(
-		async ({ context, input, errors }) => {
-			const welcome = await requireWelcomeContext(context, input.workspaceSlug)
-			const now = new Date()
-			const [progress] = await context.db
-				.update(welcomeProgressTable)
-				.set({
-					slackSkippedAt: welcome.progress.slackSkippedAt ?? now,
-					currentStep: Math.max(getCurrentWelcomeStep(welcome.progress), 5),
-					updatedAt: now,
-				})
-				.where(eq(welcomeProgressTable.id, welcome.progress.id))
-				.returning()
-
-			if (!progress) {
-				throw errors.NOT_FOUND
-			}
-
-			return {
-				progress: normalizeProgress(progress),
-				redirectTo: getWelcomeRedirectTo(
-					progress,
-					welcome.workspace.slug,
-					welcome.activeTeam.key
-				),
-			}
-		}
-	),
-
 	updateSubscriptions: protectedProcedure.welcome.updateSubscriptions.handler(
 		async ({ context, input, errors }) => {
 			const welcome = await requireWelcomeContext(context, input.workspaceSlug)
@@ -352,7 +323,7 @@ export const welcomeRouter = {
 					subscriptionsCompletedAt:
 						welcome.progress.subscriptionsCompletedAt ?? now,
 					finishedAt: welcome.progress.finishedAt ?? now,
-					currentStep: 5,
+					currentStep: 4,
 					updatedAt: now,
 				})
 				.where(eq(welcomeProgressTable.id, welcome.progress.id))
