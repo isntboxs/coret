@@ -1,19 +1,12 @@
 import { and, eq } from 'drizzle-orm'
 
-import { teamIssueCounterTable } from '#/db/schemas/attachments'
 import {
 	memberTable,
 	organizationTable,
 	sessionTable,
-	teamMemberTable,
 	teamTable,
 } from '#/db/schemas/auth'
-import { issueStatusTable } from '#/db/schemas/issues'
-import { welcomeProgressTable } from '#/db/schemas/welcome'
-import {
-	DEFAULT_WORKFLOW_STATUSES,
-	generateTeamKey,
-} from '#/features/workspace/server/defaults'
+import { ensureWorkspaceCreationDefaults } from '#/features/workspace/server/organization-hooks.server'
 import { auth } from '#/lib/auth'
 import type { ORPCContext } from '#/orpc/context'
 import { getOrpcLogger } from '#/orpc/logger'
@@ -90,7 +83,7 @@ export const workspaceRouter = {
 						body: {
 							name: input.name,
 							slug: input.slug,
-							keepCurrentActiveOrganization: true,
+							keepCurrentActiveOrganization: false,
 						},
 						returnHeaders: true,
 					})
@@ -98,96 +91,38 @@ export const workspaceRouter = {
 
 				applyResponseHeaders(org.headers, context)
 
-				const now = new Date()
-				const result = await context.db.transaction(async (tx) => {
-					const workspace = await tx.query.organizationTable.findFirst({
-						where: eq(organizationTable.id, org.response.id),
-					})
-
-					if (!workspace) {
-						throw errors.INTERNAL_SERVER_ERROR
-					}
-
-					const teamKey = await generateTeamKey(tx, workspace.id, input.name)
-					const [defaultTeam] = await tx
-						.insert(teamTable)
-						.values({
-							name: input.name,
-							organizationId: workspace.id,
-							createdAt: now,
-							updatedAt: now,
-							key: teamKey,
-							visibility: 'public',
-							creatorId: context.auth.user.id,
-						})
-						.returning()
-
-					if (!defaultTeam) {
-						throw errors.INTERNAL_SERVER_ERROR
-					}
-
-					await tx
-						.insert(teamMemberTable)
-						.values({
-							teamId: defaultTeam.id,
-							userId: context.auth.user.id,
-							createdAt: now,
-						})
-						.onConflictDoNothing()
-
-					const workflowStatuses = await tx
-						.insert(issueStatusTable)
-						.values(
-							DEFAULT_WORKFLOW_STATUSES.map((status) => {
-								return {
-									...status,
-									teamId: defaultTeam.id,
-									createdAt: now,
-									updatedAt: now,
-								}
-							})
-						)
-						.returning()
-
-					await tx.insert(teamIssueCounterTable).values({
-						teamId: defaultTeam.id,
-						nextNumber: 1,
-						createdAt: now,
-						updatedAt: now,
-					})
-
-					await tx
-						.insert(welcomeProgressTable)
-						.values({
-							organizationId: workspace.id,
-							userId: context.auth.user.id,
-							currentStep: 1,
-							githubStatus: 'not_started',
-							createdAt: now,
-							updatedAt: now,
-						})
-						.onConflictDoNothing()
-
-					await tx
-						.update(sessionTable)
-						.set({
-							activeOrganizationId: workspace.id,
-							activeTeamId: defaultTeam.id,
-							updatedAt: now,
-						})
-						.where(eq(sessionTable.id, context.auth.session.id))
-
-					return {
-						workspace,
-						defaultTeam,
-						workflowStatuses,
-					}
+				const workspace = await context.db.query.organizationTable.findFirst({
+					where: eq(organizationTable.id, org.response.id),
 				})
 
+				if (!workspace) {
+					throw errors.INTERNAL_SERVER_ERROR
+				}
+
+				const defaultTeam = await context.db.query.teamTable.findFirst({
+					where: eq(teamTable.organizationId, workspace.id),
+					orderBy: (table, { asc }) => [asc(table.createdAt)],
+				})
+
+				if (!defaultTeam) {
+					throw errors.INTERNAL_SERVER_ERROR
+				}
+
+				const workflowStatuses = await ensureWorkspaceCreationDefaults(
+					context.db,
+					{
+						workspaceId: workspace.id,
+						defaultTeamId: defaultTeam.id,
+						userId: context.auth.user.id,
+					}
+				)
+
 				return {
-					...result,
+					workspace,
+					defaultTeam,
+					workflowStatuses,
 					welcomeRequired: true,
-					redirectTo: `/${result.workspace.slug}/welcome`,
+					redirectTo: `/${workspace.slug}/welcome`,
 				}
 			}
 		),

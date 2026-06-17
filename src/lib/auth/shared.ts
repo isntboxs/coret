@@ -14,6 +14,28 @@ import type { OrganizationOptions } from 'better-auth/plugins'
 import { db } from '#/db'
 import * as schema from '#/db/schemas'
 import { env } from '#/env'
+import {
+	afterAcceptInvitationHook,
+	afterAddTeamMemberHook,
+	afterCreateInvitationHook,
+	afterCreateTeamHook,
+	afterCreateWorkspaceHook,
+	afterDeleteTeamHook,
+	afterDeleteWorkspaceHook,
+	afterRemoveTeamMemberHook,
+	afterUpdateTeamHook,
+	afterUpdateWorkspaceHook,
+	beforeAcceptInvitationHook,
+	beforeAddTeamMemberHook,
+	beforeCreateInvitationHook,
+	beforeCreateTeamHook,
+	beforeCreateWorkspaceHook,
+	beforeDeleteTeamHook,
+	beforeDeleteWorkspaceHook,
+	beforeRemoveTeamMemberHook,
+	beforeUpdateTeamHook,
+	beforeUpdateWorkspaceHook,
+} from '#/features/workspace/server/organization-hooks.server'
 
 export const organizationPluginOptions = {
 	schema: {
@@ -53,8 +75,30 @@ export const organizationPluginOptions = {
 	teams: {
 		enabled: true,
 		defaultTeam: {
-			enabled: false,
+			enabled: true,
 		},
+	},
+	organizationHooks: {
+		beforeCreateOrganization: beforeCreateWorkspaceHook,
+		afterCreateOrganization: afterCreateWorkspaceHook,
+		beforeUpdateOrganization: beforeUpdateWorkspaceHook,
+		afterUpdateOrganization: afterUpdateWorkspaceHook,
+		beforeDeleteOrganization: beforeDeleteWorkspaceHook,
+		afterDeleteOrganization: afterDeleteWorkspaceHook,
+		beforeCreateTeam: beforeCreateTeamHook,
+		afterCreateTeam: afterCreateTeamHook,
+		beforeUpdateTeam: beforeUpdateTeamHook,
+		afterUpdateTeam: afterUpdateTeamHook,
+		beforeDeleteTeam: beforeDeleteTeamHook,
+		afterDeleteTeam: afterDeleteTeamHook,
+		beforeAddTeamMember: beforeAddTeamMemberHook,
+		afterAddTeamMember: afterAddTeamMemberHook,
+		beforeRemoveTeamMember: beforeRemoveTeamMemberHook,
+		afterRemoveTeamMember: afterRemoveTeamMemberHook,
+		beforeCreateInvitation: beforeCreateInvitationHook,
+		afterCreateInvitation: afterCreateInvitationHook,
+		beforeAcceptInvitation: beforeAcceptInvitationHook,
+		afterAcceptInvitation: afterAcceptInvitationHook,
 	},
 } satisfies OrganizationOptions
 
