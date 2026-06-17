@@ -12,6 +12,10 @@ _Avoid_: Mini V1, basic tracker
 The top-level collaboration container where members belong and shared organization settings live.
 _Avoid_: Organization, account
 
+**Workspace Creation**:
+The signed-in, no-Workspace state rendered on `/` where a user creates a Workspace and its Default Team.
+_Avoid_: Onboarding, organization creation
+
 **Workspace Member**:
 A person who belongs to a workspace and can participate according to their workspace role and team memberships.
 _Avoid_: User, collaborator
@@ -23,6 +27,10 @@ _Avoid_: Admin panel, organization settings
 **Team**:
 The primary work boundary for issues, issue identifiers, workflows, and team-level access.
 _Avoid_: Group, squad
+
+**Default Team**:
+The first public Team created from the Workspace name during Workspace Creation.
+_Avoid_: Starter team, initial group
 
 **Team Member**:
 A workspace member who has joined a team; for private teams, team membership grants access to that team's private work.
@@ -123,6 +131,10 @@ _Avoid_: Search modal, launcher
 **Workspace Search**:
 A workspace-scoped search surface for finding accessible issues and projects.
 _Avoid_: Global search, command search
+
+**Welcome Flow**:
+The post-Workspace Creation multi-step setup flow at `/:workspaceSlug/welcome` for profile, invitations, integrations, and subscription preferences.
+_Avoid_: Onboarding wizard, setup tour
 
 **Triage**:
 A team-specific intake queue for reviewing issues before they enter the team's normal workflow.

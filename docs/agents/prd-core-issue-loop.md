@@ -1,6 +1,6 @@
 # Core Issue Loop PRD
 
-This PRD defines the smallest shippable milestone on the path to the larger [Linear Clone V1 Plan](./prd.md). It narrows the first release to the Core Issue Loop: workspace members can create, find, and update issues inside a public team's workflow.
+This PRD defines the smallest shippable milestone on the path to the larger [Linear Clone V1 Plan](./prd.md). It narrows the first release to the Core Issue Loop: Workspace Members can create, find, and update issues inside a public Team's workflow.
 
 ## 1. Executive Summary
 
@@ -8,53 +8,74 @@ This PRD defines the smallest shippable milestone on the path to the larger [Lin
 The current V1 plan is too broad for a first implementation milestone. It includes private teams, projects, cycles, labels, comments, attachments, custom views, command menu, search, invitations, and rich editor behavior before the basic issue loop has been proven end-to-end.
 
 **Proposed Solution**:
-Ship a focused Core Issue Loop first. The app will support OAuth sign-in, workspace onboarding, public teams, default team workflow statuses, issue creation, issue list/detail, and issue property updates through the existing TanStack Start, Better Auth, Drizzle, oRPC, and TanStack Query stack.
+Ship a focused Core Issue Loop first. The app will support OAuth sign-in, session-gated Workspace Creation on `/`, Welcome Flow setup, public Teams, default Workflow Statuses, issue creation, issue list/detail, and issue property updates through the existing TanStack Start, Better Auth, Drizzle, oRPC, and TanStack Query stack.
 
 **Success Criteria**:
 
-- A signed-in user with no workspace can create a workspace, get a default public team, and land on that team's issue list.
-- A workspace member can create an issue with a title and receive a stable team-scoped issue key such as `CORE-1`.
-- A workspace member can view, filter lightly, and open issues in a team issue list without leaving the workspace context.
-- A workspace member can update title, description, workflow status, assignee, priority, estimate, and due date from issue detail.
-- Protected routes and oRPC procedures reject unauthenticated users and users outside the issue's workspace.
+- A signed-in user with no Workspace can create a Workspace, get a Default Team, complete or skip Welcome Flow steps, and land at `/:workspaceSlug/team/:teamKey/active`.
+- A Workspace Member can create an Issue with a title and receive a stable team-scoped issue key such as `CORE-1`.
+- A Workspace Member can view, filter lightly, and open Issues in a Team issue list without leaving the Workspace context.
+- A Workspace Member can update title, description, Workflow Status, assignee, priority, estimate, and due date from Issue detail.
+- Protected routes and oRPC procedures reject unauthenticated users and users outside the Issue's Workspace.
 
 Source basis:
 
 - Existing local docs: [Linear Clone V1 Plan](./prd.md), [Coret glossary](../../CONTEXT.md), and [ADR 0001](../adr/0001-better-auth-with-domain-policies.md).
-- Linear docs references already used by the parent V1 plan: https://linear.app/docs/conceptual-model, https://linear.app/docs/creating-issues, https://linear.app/docs/configuring-workflows, https://linear.app/docs/default-team-pages, and https://linear.app/docs/teams.
+- Linear docs references already used by the parent V1 plan: https://linear.app/docs/conceptual-model, https://linear.app/docs/creating-issues, https://linear.app/docs/configuring-workflows, https://linear.app/docs/default-team-pages, https://linear.app/docs/workspaces, https://linear.app/docs/login-methods, https://linear.app/docs/profile, https://linear.app/docs/github, https://linear.app/docs/slack, https://linear.app/docs/invite-members, https://linear.app/docs/account-preferences, and https://linear.app/docs/teams.
 - Better Auth organization model reference: https://better-auth.com/docs/plugins/organization#usage.
 
 ## 2. User Experience & Functionality
 
 **User Personas**:
 
-- **First Workspace Owner**: A signed-in user setting up a new workspace and first team.
-- **Workspace Member**: A person who belongs to a workspace and manages issues in public teams.
+- **First Workspace Owner**: A signed-in user setting up a new Workspace and first Team.
+- **Workspace Member**: A person who belongs to a Workspace and manages Issues in public Teams.
 
 **User Stories**:
 
-- As a First Workspace Owner, I want to create a workspace and default team so that I can start tracking issues immediately.
-- As a Workspace Member, I want to see a team's issues so that I can understand current work.
-- As a Workspace Member, I want to create an issue quickly so that new work is captured without setup overhead.
-- As a Workspace Member, I want to open and update an issue so that the issue reflects its current status and ownership.
-- As a Workspace Member, I want issue access to stay inside my workspace so that another workspace's issues are not visible or mutable.
+- As a First Workspace Owner, I want OAuth to return me to `/` and show Workspace Creation when I have no Workspace so that the first setup step is clear.
+- As a First Workspace Owner, I want to create a Workspace and Default Team so that I can start tracking issues immediately.
+- As a First Workspace Owner, I want to complete or skip Welcome Flow setup steps so that my profile, invitations, integrations, and update preferences are captured before I enter the app.
+- As a Workspace Member, I want to see a Team's Issues so that I can understand current work.
+- As a Workspace Member, I want to create an Issue quickly so that new work is captured without setup overhead.
+- As a Workspace Member, I want to open and update an Issue so that the Issue reflects its current status and ownership.
+- As a Workspace Member, I want Issue access to stay inside my Workspace so that another Workspace's Issues are not visible or mutable.
 
 **Acceptance Criteria**:
 
-- Onboarding:
+- Workspace Creation and Welcome Flow:
   - `/login` supports Google and GitHub OAuth only.
-  - `/` redirects unauthenticated users to `/login`.
-  - `/` redirects authenticated users without a workspace to `/onboarding`.
-  - `/onboarding` creates a Workspace and one default public Team in one completed user flow.
-  - The default Team receives a generated team key, default timezone, default Workflow Statuses, and a team issue counter.
-  - After onboarding, the user lands at `/:workspaceSlug/teams/:teamKey/issues`.
+  - OAuth callback and new-user callback URLs return to `/`.
+  - `/` shows the public landing/Get started page when no signed-in session exists.
+  - `/` renders Workspace Creation when a signed-in user has no Workspace.
+  - `/` redirects signed-in users with an active Workspace and Team to `/:workspaceSlug/team/:teamKey/active`.
+  - Workspace Creation creates a Workspace and one Default Team in one completed user flow.
+  - The Default Team name comes from the Workspace name.
+  - The Default Team receives a generated Team key, default timezone, default Workflow Statuses, and a Team Issue Counter.
+  - Workspace Creation sets the active Workspace and active Team on the session.
+  - After Workspace Creation, the user lands at `/:workspaceSlug/welcome`.
+  - `/onboarding`, if present for compatibility, redirects to `/` and is not a new product surface.
+
+- Welcome Flow:
+  - `/:workspaceSlug/welcome` is accessible only to Workspace Members of that Workspace.
+  - Welcome progress is persisted so refreshes and deep links resume the current incomplete step.
+  - Step 1 captures profile picture, name, username, and title.
+  - Step 2 lets the user copy an invitation link and enter invitee emails in a textarea separated by commas.
+  - Step 2 allows empty input and treats it as a skipped invitation step.
+  - Step 3 offers GitHub authentication or skip.
+  - Step 4 shows Slack connect as a skip-only deferred step and requires no Slack credentials or backend Slack integration.
+  - Step 5 captures changelog opt-in, onboarding email opt-in, and a follow link/action.
+  - Finishing Welcome redirects to `/:workspaceSlug/team/:teamKey/active`.
 
 - Team issue list:
-  - `/:workspaceSlug/teams/:teamKey/issues` renders issues for the selected Team.
+  - `/:workspaceSlug/team/:teamKey/active` renders active issues for the selected Team.
+  - `/:workspaceSlug/team/:teamKey/backlog` renders backlog issues for the selected Team.
+  - `/:workspaceSlug/team/:teamKey/archive` renders archived issues for the selected Team.
   - The list shows issue key, title, Workflow Status, assignee, priority, estimate, due date, and updated timestamp.
-  - The list excludes archived issues.
+  - The active and backlog lists exclude archived issues.
   - The list supports lightweight filters for Workflow Status and assignee.
   - Empty, loading, and error states are implemented.
+  - Legacy `/:workspaceSlug/teams/:teamKey/issues/active`, `/:workspaceSlug/teams/:teamKey/issues/backlog`, and `/:workspaceSlug/teams/:teamKey/issues/archive` routes redirect to the singular canonical routes.
 
 - Issue creation:
   - A create issue action is available from the team issue list.
@@ -66,7 +87,7 @@ Source basis:
   - The creator is stored as the signed-in user.
 
 - Issue detail and updates:
-  - `/:workspaceSlug/teams/:teamKey/issues/$issueKey` renders the canonical issue detail route.
+  - `/:workspaceSlug/team/:teamKey/issues/$issueKey` renders the canonical issue detail route.
   - The detail page shows title, description, Workflow Status, assignee, creator, priority, estimate, due date, created timestamp, and updated timestamp.
   - A Workspace Member can update title, description, Workflow Status, assignee, priority, estimate, and due date.
   - Moving an issue into a Started, Completed, or Canceled status category updates `startedAt`, `completedAt`, or `canceledAt` consistently.
@@ -84,7 +105,8 @@ Source basis:
 **Non-Goals**:
 
 - Private Teams and private-team visibility rules.
-- Workspace invitations, member admin, and role-management UI.
+- Workspace member admin and role-management UI.
+- Invitation delivery is limited to the Welcome Flow invite step; full invitation settings and resend/cancel management are deferred.
 - Team settings beyond default public Team creation.
 - Workflow Status customization UI.
 - Projects, Project Milestones, Project Statuses, and multi-team project behavior.
@@ -109,7 +131,7 @@ Not applicable. Core Issue Loop is a product workflow milestone and does not inc
 **Architecture Overview**:
 
 - TanStack Start owns routing, SSR document shell, and API route mounting.
-- Better Auth owns users, sessions, workspaces through organizations, workspace members, teams, team members, and OAuth sign-in.
+- Better Auth owns users, sessions, Workspaces through organizations, Workspace Members, Teams, Team Members, and OAuth sign-in.
 - Drizzle and Postgres own persistence.
 - oRPC under `/api/rpc/$` owns typed server procedures and structured errors.
 - TanStack Query owns client-side fetching, mutations, cache invalidation, and optimistic UI where low-risk.
@@ -117,8 +139,10 @@ Not applicable. Core Issue Loop is a product workflow milestone and does not inc
 
 Current codebase baseline:
 
-- Auth, Better Auth organization plugin, Drizzle schemas, oRPC base/protected procedures, login UI, and workspace creation UI already exist.
+- Auth, Better Auth organization plugin, Drizzle schemas, oRPC base/protected procedures, login UI, and Workspace Creation UI already exist.
 - Domain tables already include Teams, Workflow Statuses, Issues, Issue Key History, and Team Issue Counters.
+- Workspace Creation must be expanded from simple Workspace creation to Workspace plus Default Team creation.
+- Welcome Flow route/API implementation still needs to be added.
 - Route/API implementation for Teams and Issues still needs to be added.
 
 Core data model:
@@ -142,9 +166,11 @@ Routing:
 
 - `/`
 - `/login`
-- `/onboarding`
-- `/:workspaceSlug/teams/:teamKey/issues`
-- `/:workspaceSlug/teams/:teamKey/issues/$issueKey`
+- `/:workspaceSlug/welcome`
+- `/:workspaceSlug/team/:teamKey/active`
+- `/:workspaceSlug/team/:teamKey/backlog`
+- `/:workspaceSlug/team/:teamKey/archive`
+- `/:workspaceSlug/team/:teamKey/issues/$issueKey`
 - `/api/auth/$`
 - `/api/rpc/$`
 
@@ -152,6 +178,10 @@ oRPC procedures:
 
 - `workspace.createWithDefaultTeam`
 - `workspace.listMine`
+- `welcome.updateProfile`
+- `welcome.inviteTeammates`
+- `welcome.connectGithub`
+- `welcome.updateSubscriptions`
 - `team.listByWorkspace`
 - `team.getByKey`
 - `issueStatus.listByTeam`
@@ -166,6 +196,13 @@ Procedure behavior:
 - Outputs are typed and stable enough for TanStack Query hooks.
 - Mutations return the updated authoritative entity.
 - Errors distinguish validation, unauthorized, forbidden, not found, and conflict cases.
+- `workspace.createWithDefaultTeam` input is `name`, `slug`, and optional `region`.
+- `workspace.createWithDefaultTeam` output is `workspace`, `defaultTeam`, `welcomeRequired: true`, and `redirectTo`.
+- `workspace.createWithDefaultTeam` sets active Workspace and active Team on the session.
+- `welcome.updateProfile` accepts profile picture URL/blob reference, name, username, and title.
+- `welcome.inviteTeammates` accepts comma-separated emails parsed into invitations and allows empty input for skip.
+- `welcome.connectGithub` records OAuth start/complete or skipped state.
+- `welcome.updateSubscriptions` records changelog opt-in and onboarding email opt-in.
 - `issue.create` runs issue counter increment and issue insert in one database transaction.
 
 Security & Privacy:
@@ -197,7 +234,15 @@ bun --bun run build
 
 - Add focused tests for:
   - Protected oRPC procedure rejection when unauthenticated.
-  - Workspace onboarding creates Workspace, Team, statuses, and counter.
+  - OAuth callback/new user lands on `/`.
+  - Signed-in user with no Workspace sees Workspace Creation on `/`.
+  - Workspace Creation creates Workspace, Default Team, Team key, default Workflow Statuses, Team Issue Counter, active session Workspace, and active session Team.
+  - Workspace Creation redirects to `/:workspaceSlug/welcome`.
+  - Welcome Flow steps can be completed or skipped according to scope.
+  - Slack Welcome step is skip-only and does not require Slack credentials.
+  - Welcome finish redirects to `/:workspaceSlug/team/:teamKey/active`.
+  - Old plural Team routes redirect to singular canonical routes.
+  - Cross-workspace access to `/:workspaceSlug/welcome` and Team pages remains authorization-safe.
   - Issue creation generates sequential issue keys under concurrent requests.
   - Issue list excludes cross-workspace Issues.
   - Issue detail denies cross-workspace access.
@@ -209,7 +254,7 @@ bun --bun run build
 
 **Phased Rollout**:
 
-- **Core Issue Loop**: OAuth, workspace onboarding, public teams, default Workflow Statuses, issue list, issue create, issue detail, and issue update.
+- **Core Issue Loop**: OAuth, Workspace Creation on `/`, Welcome Flow, public teams, default Workflow Statuses, issue list, issue create, issue detail, and issue update.
 - **Scale Step 1**: Workspace invitations, member admin, Team settings, and Workflow Status customization.
 - **Scale Step 2**: Private Teams and the full policy matrix from ADR 0001.
 - **Scale Step 3**: Projects, Project Milestones, Labels, Cycles, and saved Issue Views.

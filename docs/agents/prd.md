@@ -165,7 +165,7 @@ Reference docs:
 Use this app URL shape:
 
 ```txt
-/:workspaceSlug/teams/:teamKey/...
+/:workspaceSlug/team/:teamKey/...
 ```
 
 Required routes:
@@ -173,23 +173,23 @@ Required routes:
 ```txt
 /
 /login
-/onboarding
+/:workspaceSlug/welcome
 /:workspaceSlug/my/issues
 /:workspaceSlug/issues/$issueKey
-/:workspaceSlug/teams/:teamKey
-/:workspaceSlug/teams/:teamKey/issues
-/:workspaceSlug/teams/:teamKey/issues/active
-/:workspaceSlug/teams/:teamKey/issues/backlog
-/:workspaceSlug/teams/:teamKey/issues/archive
-/:workspaceSlug/teams/:teamKey/issues/$issueKey
-/:workspaceSlug/teams/:teamKey/cycles
-/:workspaceSlug/teams/:teamKey/cycles/current
-/:workspaceSlug/teams/:teamKey/cycles/upcoming
-/:workspaceSlug/teams/:teamKey/cycles/$cycleId
-/:workspaceSlug/teams/:teamKey/projects
-/:workspaceSlug/teams/:teamKey/views
-/:workspaceSlug/teams/:teamKey/views/$viewId
-/:workspaceSlug/teams/:teamKey/settings
+/:workspaceSlug/team/:teamKey
+/:workspaceSlug/team/:teamKey/active
+/:workspaceSlug/team/:teamKey/backlog
+/:workspaceSlug/team/:teamKey/archive
+/:workspaceSlug/team/:teamKey/issues
+/:workspaceSlug/team/:teamKey/issues/$issueKey
+/:workspaceSlug/team/:teamKey/cycles
+/:workspaceSlug/team/:teamKey/cycles/current
+/:workspaceSlug/team/:teamKey/cycles/upcoming
+/:workspaceSlug/team/:teamKey/cycles/$cycleId
+/:workspaceSlug/team/:teamKey/projects
+/:workspaceSlug/team/:teamKey/views
+/:workspaceSlug/team/:teamKey/views/$viewId
+/:workspaceSlug/team/:teamKey/settings
 /:workspaceSlug/projects
 /:workspaceSlug/projects/$projectSlug
 /:workspaceSlug/projects/$projectSlug/issues
@@ -201,18 +201,27 @@ Required routes:
 /api/rpc/$
 ```
 
+Legacy route redirects:
+
+- `/:workspaceSlug/teams/:teamKey/issues/active` redirects to `/:workspaceSlug/team/:teamKey/active`.
+- `/:workspaceSlug/teams/:teamKey/issues/backlog` redirects to `/:workspaceSlug/team/:teamKey/backlog`.
+- `/:workspaceSlug/teams/:teamKey/issues/archive` redirects to `/:workspaceSlug/team/:teamKey/archive`.
+- `/onboarding` is not a new product surface; if implemented for compatibility, redirect it to `/`.
+
 Issue URL rules:
 
-- Canonical issue detail route is `/:workspaceSlug/teams/:teamKey/issues/$issueKey`.
+- Canonical issue detail route is `/:workspaceSlug/team/:teamKey/issues/$issueKey`.
 - Workspace-level issue resolver route is `/:workspaceSlug/issues/$issueKey`.
 - The resolver finds the issue by current or historical issue key and redirects to the canonical route when the viewer has access.
 - Issue key history is stored so old issue keys continue to resolve after a move between teams.
 - Inaccessible or unknown issue keys return an authorization-safe not found response.
+- Issue keys remain team-scoped in V1. Issue detail routing stays on the Team route plus workspace-level resolver unless a later PRD explicitly moves issue detail to Linear's workspace-level issue URL style.
 
 Reference docs:
 
 - https://linear.app/docs/conceptual-model
 - https://linear.app/docs/editing-issues
+- https://linear.app/docs/default-team-pages
 
 Moving an issue between teams follows Linear's documented behavior:
 
@@ -239,14 +248,24 @@ Reference docs:
 
 Root route behavior:
 
-- If unauthenticated, redirect to `/login`.
-- If authenticated with no workspace, redirect to `/onboarding`.
-- If authenticated with workspace/team, redirect to the active/default team issues route.
+- OAuth sign-in/sign-up callbacks return to `/`.
+- If unauthenticated, `/` is the public landing page with a path to `/login`.
+- If authenticated with no Workspace, `/` renders Workspace Creation rather than a separate onboarding route.
+- Workspace Creation creates a Workspace and a Default Team from the Workspace name, sets both as active on the session, and redirects to `/:workspaceSlug/welcome`.
+- If authenticated with a Workspace and Team, `/` redirects to `/:workspaceSlug/team/:teamKey/active`.
+- `/:workspaceSlug/welcome` is the post-Workspace Creation Welcome Flow.
 
 When a user opens a workspace slug different from the active organization:
 
 - If they are a member, set that workspace as active and continue.
 - If not, reject/redirect with an authorization-safe error.
+
+Reference docs:
+
+- https://linear.app/docs/workspaces
+- https://linear.app/docs/login-methods
+- https://linear.app/docs/teams
+- https://linear.app/docs/default-team-pages
 
 ## Data Model
 
@@ -682,6 +701,23 @@ Use typed internal contracts with:
 
 Use TanStack Query through oRPC for UI data loading, mutations, cache invalidation, and loading states.
 
+Workspace Creation and Welcome Flow procedures:
+
+- `workspace.createWithDefaultTeam(input)`
+  - Input: `name`, `slug`, and optional `region`.
+  - Output: `workspace`, `defaultTeam`, `welcomeRequired: true`, and `redirectTo`.
+  - Side effects: creates the Workspace, creates the Default Team from the Workspace name, creates default Workflow Statuses and a Team Issue Counter, and sets the active Workspace and active Team on the session.
+- `welcome.updateProfile(input)`
+  - Input: profile picture URL or blob reference, name, username, and title.
+- `welcome.inviteTeammates(input)`
+  - Input: emails parsed from a comma-separated textarea.
+  - Empty input is allowed and records the step as skipped.
+- `welcome.connectGithub(input)`
+  - Input: OAuth start/complete state or skipped state.
+- `welcome.updateSubscriptions(input)`
+  - Input: changelog opt-in and onboarding email opt-in.
+- Welcome Flow progress is stored so refreshes and direct links to `/:workspaceSlug/welcome` resume the current incomplete step.
+
 Realtime transport is deferred, but v1 should still feel fast:
 
 - No WebSocket or SSE transport in v1.
@@ -725,7 +761,8 @@ Use shadcn-style local components with Tailwind and lucide icons.
 Required UI surfaces:
 
 - Login/signup screen
-- Onboarding flow for workspace + default team creation
+- Session-gated Workspace Creation on `/`
+- Welcome Flow at `/:workspaceSlug/welcome`
 - App shell with sidebar
 - Workspace switcher
 - Team switcher
@@ -755,14 +792,41 @@ Store BlockNote JSON as the canonical document format. Generate derived plain te
 
 File/image uploads are included in v1 issue attachments.
 
+Workspace Creation follows Linear's new-workspace entry behavior:
+
+- OAuth sign-in/sign-up returns to `/`.
+- Unauthenticated `/` remains a public landing page.
+- Authenticated users with no Workspace see the Workspace Creation form on `/`.
+- Workspace Creation captures Workspace name, URL slug, and optional region.
+- Creating a Workspace also creates the Default Team from the Workspace name.
+- Successful Workspace Creation redirects to `/:workspaceSlug/welcome`.
+
+Welcome Flow follows the provided Linear screenshot reference:
+
+- Step 1: profile picture, name, username, and title.
+- Step 2: copy invitation link and invite teammates by comma-separated email textarea.
+- Step 3: GitHub integration with authenticate or skip.
+- Step 4: Slack connect is shown as a skip-only deferred step with no backend Slack integration.
+- Step 5: subscribe to updates with changelog toggle, onboarding emails toggle, follow link/action, and finish.
+- Finishing redirects to `/:workspaceSlug/team/:teamKey/active`.
+
+Reference docs:
+
+- https://linear.app/docs/workspaces
+- https://linear.app/docs/profile
+- https://linear.app/docs/invite-members
+- https://linear.app/docs/github
+- https://linear.app/docs/slack
+- https://linear.app/docs/account-preferences
+
 Team Home follows a lightweight version of Linear's team home:
 
-- `/:workspaceSlug/teams/:teamKey` opens the team home.
+- `/:workspaceSlug/team/:teamKey` opens the team home.
 - Team home shows team name, team key, visibility, and members.
 - Team home links to Issues, Active, Backlog, Cycles, Projects, Views, and Archive.
 - Documents, pinned resources, and team resource management are deferred.
 - Clicking a team in the sidebar opens team home.
-- Root/default app redirects can still land users on the default team issue view.
+- Root/default app redirects can still land users on `/:workspaceSlug/team/:teamKey/active`.
 
 Reference docs:
 
@@ -1311,7 +1375,14 @@ Add Vitest integration tests with a test Postgres database for:
 - Schema setup without applying Postgres migration files before V1 completion
 - Seed data
 - Auth session setup
-- Workspace onboarding
+- OAuth callback/new-user redirect to `/`
+- Workspace Creation on `/` for signed-in users without a Workspace
+- Workspace Creation creating a Workspace, Default Team, Team key, default Workflow Statuses, Team Issue Counter, active session Workspace, and active session Team
+- Workspace Creation redirecting to `/:workspaceSlug/welcome`
+- Welcome Flow completion and skip behavior
+- Slack Welcome step requiring no Slack credentials
+- Welcome finish redirecting to `/:workspaceSlug/team/:teamKey/active`
+- Legacy plural Team route redirects to singular canonical routes
 - Organization/team authorization
 - Cross-tenant denial
 - Issue creation
@@ -1335,7 +1406,9 @@ Add Vitest integration tests with a test Postgres database for:
 Add focused UI smoke tests for:
 
 - Login route
-- Onboarding redirect
+- Public landing page on unauthenticated `/`
+- Workspace Creation render on authenticated no-Workspace `/`
+- Welcome Flow route
 - Protected route redirect
 - Issue list render
 - Issue detail render
@@ -1345,7 +1418,7 @@ Add focused UI smoke tests for:
 
 V1 is complete when:
 
-- A new user can sign in with Google or GitHub using a provider-verified email, create a workspace and team, and land in the issues screen.
+- A new user can sign in with Google or GitHub using a provider-verified email, create a Workspace and Default Team from `/`, complete or skip Welcome Flow steps, and land at `/:workspaceSlug/team/:teamKey/active`.
 - Email/password auth and password reset are not available in v1.
 - An owner/admin can invite members by email.
 - Users can create public and private teams during normal workspace use.
