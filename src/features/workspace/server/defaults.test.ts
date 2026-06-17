@@ -48,19 +48,20 @@ describe('workspace defaults', () => {
 	})
 
 	it('builds a team key from workspace words', () => {
-		expect(getTeamKeyBase('Acme Product Ops')).toBe('APO')
+		expect(getTeamKeyBase('Acme Product Ops')).toBe('ACME')
 		expect(getTeamKeyBase('Coret')).toBe('CORE')
+		expect(getTeamKeyBase('Oalah Asu')).toBe('OALA')
 		expect(getTeamKeyBase('!!!')).toBe('TEAM')
 	})
 
 	it('resolves team key collisions with numeric suffixes', async () => {
-		const occupied = new Set(['APO', 'APO2', 'APO3'])
+		const occupied = new Set(['ACME', 'ACME2', 'ACME3'])
 
 		await expect(
 			generateTeamKeyFromExists('Acme Product Ops', (key) =>
 				Promise.resolve(occupied.has(key))
 			)
-		).resolves.toBe('APO4')
+		).resolves.toBe('ACME4')
 	})
 
 	it('caps team keys at five characters when adding suffixes', async () => {

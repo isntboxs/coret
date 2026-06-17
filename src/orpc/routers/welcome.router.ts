@@ -142,6 +142,29 @@ export const welcomeRouter = {
 			),
 			columns: { id: true },
 		})
+		let progress = welcome.progress
+
+		if (
+			githubAccount &&
+			!progress.githubCompletedAt &&
+			!progress.githubSkippedAt
+		) {
+			const now = new Date()
+			const [updatedProgress] = await context.db
+				.update(welcomeProgressTable)
+				.set({
+					githubStatus: 'connected',
+					githubCompletedAt: now,
+					currentStep: Math.max(getCurrentWelcomeStep(progress), 4),
+					updatedAt: now,
+				})
+				.where(eq(welcomeProgressTable.id, progress.id))
+				.returning()
+
+			if (updatedProgress) {
+				progress = updatedProgress
+			}
+		}
 
 		return {
 			workspace: {
@@ -156,11 +179,11 @@ export const welcomeRouter = {
 				image: welcome.user.image ?? null,
 				title: welcome.user.title ?? null,
 			},
-			progress: normalizeProgress(welcome.progress),
+			progress: normalizeProgress(progress),
 			inviteLink: getInviteLink(welcome.workspace.slug),
 			githubConnected: Boolean(githubAccount),
 			redirectTo: getWelcomeRedirectTo(
-				welcome.progress,
+				progress,
 				welcome.workspace.slug,
 				welcome.activeTeam.key
 			),
@@ -282,9 +305,7 @@ export const welcomeRouter = {
 					githubSkippedAt: isSkip
 						? (welcome.progress.githubSkippedAt ?? now)
 						: welcome.progress.githubSkippedAt,
-					githubCompletedAt: isSkip
-						? welcome.progress.githubCompletedAt
-						: welcome.progress.githubCompletedAt,
+					githubCompletedAt: welcome.progress.githubCompletedAt,
 					currentStep: isSkip
 						? Math.max(getCurrentWelcomeStep(welcome.progress), 4)
 						: getCurrentWelcomeStep(welcome.progress),

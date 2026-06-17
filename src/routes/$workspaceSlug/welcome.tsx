@@ -1,8 +1,14 @@
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import {
+	createFileRoute,
+	redirect,
+	useNavigate,
+	useRouter,
+} from '@tanstack/react-router'
 
 import {
+	IconArrowRight,
 	IconBrandGithub,
 	IconCheck,
 	IconCopy,
@@ -56,19 +62,20 @@ function WelcomeRoute() {
 	const initial = Route.useLoaderData()
 	const params = Route.useParams()
 	const navigate = useNavigate()
+	const router = useRouter()
 	const queryClient = useQueryClient()
 	const currentStep = initial.progress.currentStep
 	const progressValue = (currentStep / 4) * 100
 
 	const invalidate = async () => {
 		await queryClient.invalidateQueries()
+		await router.invalidate({ sync: true })
 	}
 
 	const profileMutation = useMutation(
 		orpc.welcome.updateProfile.mutationOptions({
 			onSuccess: async () => {
 				await invalidate()
-				toast.success('Profile saved')
 			},
 			onError: (error) => toast.error(error.message),
 		})
@@ -77,7 +84,6 @@ function WelcomeRoute() {
 		orpc.welcome.inviteTeammates.mutationOptions({
 			onSuccess: async () => {
 				await invalidate()
-				toast.success('Invitation step saved')
 			},
 			onError: (error) => toast.error(error.message),
 		})
@@ -153,6 +159,13 @@ function WelcomeRoute() {
 		toast.success('Invitation link copied')
 	}
 
+	const skipInvites = async () => {
+		await inviteMutation.mutateAsync({
+			workspaceSlug: params.workspaceSlug,
+			emailsText: '',
+		})
+	}
+
 	const startGithub = async () => {
 		await githubMutation.mutateAsync({
 			workspaceSlug: params.workspaceSlug,
@@ -174,6 +187,13 @@ function WelcomeRoute() {
 			return
 		}
 		toast.message('GitHub linking started. Skip is available for now.')
+	}
+
+	const skipGithub = async () => {
+		await githubMutation.mutateAsync({
+			workspaceSlug: params.workspaceSlug,
+			action: 'skip',
+		})
 	}
 
 	return (
@@ -205,315 +225,334 @@ function WelcomeRoute() {
 					</nav>
 
 					<div className="flex flex-col gap-5">
-						<Card>
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-lg">
-									<IconUser data-icon="inline-start" />
-									Profile
-								</CardTitle>
-								<CardDescription>
-									Set the identity other Workspace Members will see.
-								</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<form
-									id="welcome-profile-form"
-									onSubmit={(event) => {
-										event.preventDefault()
-										event.stopPropagation()
-										void profileForm.handleSubmit()
-									}}
-								>
-									<FieldGroup>
-										<profileForm.Field
-											name="image"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>
-														Profile picture URL
-													</FieldLabel>
-													<div className="flex items-center gap-3">
-														<Avatar size="lg">
-															{field.state.value ? (
-																<AvatarImage src={field.state.value} alt="" />
-															) : null}
-															<AvatarFallback>
-																{initial.profile.name.slice(0, 2).toUpperCase()}
-															</AvatarFallback>
-														</Avatar>
-														<Input
-															id={field.name}
-															value={field.state.value}
-															onChange={(event) => {
-																field.handleChange(event.target.value)
-															}}
-															placeholder="https://example.com/avatar.png"
-														/>
-													</div>
-												</Field>
-											)}
-										/>
-										<profileForm.Field
-											name="name"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>Name</FieldLabel>
-													<Input
-														id={field.name}
-														value={field.state.value}
-														onChange={(event) => {
-															field.handleChange(event.target.value)
-														}}
-													/>
-												</Field>
-											)}
-										/>
-										<profileForm.Field
-											name="username"
-											children={(field) => {
-												const invalid =
-													field.state.meta.isTouched &&
-													!field.state.meta.isValid
-												return (
-													<Field data-invalid={invalid}>
+						{currentStep === 1 ? (
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2 text-lg">
+										<IconUser data-icon="inline-start" />
+										Profile
+									</CardTitle>
+									<CardDescription>
+										Set the identity other Workspace Members will see.
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<form
+										id="welcome-profile-form"
+										onSubmit={(event) => {
+											event.preventDefault()
+											event.stopPropagation()
+											void profileForm.handleSubmit()
+										}}
+									>
+										<FieldGroup>
+											<profileForm.Field
+												name="image"
+												children={(field) => (
+													<Field>
 														<FieldLabel htmlFor={field.name}>
-															Username
+															Profile picture URL
 														</FieldLabel>
+														<div className="flex items-center gap-3">
+															<Avatar size="lg">
+																{field.state.value ? (
+																	<AvatarImage src={field.state.value} alt="" />
+																) : null}
+																<AvatarFallback>
+																	{initial.profile.name
+																		.slice(0, 2)
+																		.toUpperCase()}
+																</AvatarFallback>
+															</Avatar>
+															<Input
+																id={field.name}
+																value={field.state.value}
+																onChange={(event) => {
+																	field.handleChange(event.target.value)
+																}}
+																placeholder="https://example.com/avatar.png"
+															/>
+														</div>
+													</Field>
+												)}
+											/>
+											<profileForm.Field
+												name="name"
+												children={(field) => (
+													<Field>
+														<FieldLabel htmlFor={field.name}>Name</FieldLabel>
 														<Input
 															id={field.name}
 															value={field.state.value}
 															onChange={(event) => {
 																field.handleChange(event.target.value)
 															}}
-															aria-invalid={invalid}
 														/>
-														{invalid ? (
-															<FieldError errors={field.state.meta.errors} />
-														) : null}
 													</Field>
-												)
-											}}
-										/>
-										<profileForm.Field
-											name="title"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>Title</FieldLabel>
-													<Input
-														id={field.name}
-														value={field.state.value}
-														onChange={(event) => {
-															field.handleChange(event.target.value)
-														}}
-														placeholder="Product lead"
-													/>
-												</Field>
-											)}
-										/>
-									</FieldGroup>
-								</form>
-							</CardContent>
-							<CardFooter>
-								<Button
-									form="welcome-profile-form"
-									disabled={profileMutation.isPending}
-								>
-									Save Profile
-								</Button>
-							</CardFooter>
-						</Card>
+												)}
+											/>
+											<profileForm.Field
+												name="username"
+												children={(field) => {
+													const invalid =
+														field.state.meta.isTouched &&
+														!field.state.meta.isValid
+													return (
+														<Field data-invalid={invalid}>
+															<FieldLabel htmlFor={field.name}>
+																Username
+															</FieldLabel>
+															<Input
+																id={field.name}
+																value={field.state.value}
+																onChange={(event) => {
+																	field.handleChange(event.target.value)
+																}}
+																aria-invalid={invalid}
+															/>
+															{invalid ? (
+																<FieldError errors={field.state.meta.errors} />
+															) : null}
+														</Field>
+													)
+												}}
+											/>
+											<profileForm.Field
+												name="title"
+												children={(field) => (
+													<Field>
+														<FieldLabel htmlFor={field.name}>Title</FieldLabel>
+														<Input
+															id={field.name}
+															value={field.state.value}
+															onChange={(event) => {
+																field.handleChange(event.target.value)
+															}}
+															placeholder="Product lead"
+														/>
+													</Field>
+												)}
+											/>
+										</FieldGroup>
+									</form>
+								</CardContent>
+								<CardFooter className="justify-end">
+									<Button
+										form="welcome-profile-form"
+										disabled={profileMutation.isPending}
+									>
+										Next
+										<IconArrowRight data-icon="inline-end" />
+									</Button>
+								</CardFooter>
+							</Card>
+						) : null}
 
-						<Card>
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-lg">
-									<IconMail data-icon="inline-start" />
-									Invite teammates
-								</CardTitle>
-								<CardDescription>
-									Invite by email or continue with an empty list.
-								</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<form
-									id="welcome-invite-form"
-									onSubmit={(event) => {
-										event.preventDefault()
-										event.stopPropagation()
-										void inviteForm.handleSubmit()
-									}}
-								>
-									<FieldGroup>
-										<Field>
-											<FieldLabel>Invitation link</FieldLabel>
-											<div className="flex gap-2">
-												<Input value={initial.inviteLink} readOnly />
-												<Button
-													type="button"
-													variant="outline"
-													onClick={() => void copyInviteLink()}
-												>
-													<IconCopy data-icon="inline-start" />
-													Copy
-												</Button>
-											</div>
-										</Field>
-										<inviteForm.Field
-											name="emailsText"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>Emails</FieldLabel>
-													<Textarea
-														id={field.name}
-														value={field.state.value}
-														onChange={(event) => {
-															field.handleChange(event.target.value)
-														}}
-														placeholder="ada@example.com, grace@example.com"
-													/>
-													<FieldDescription>
-														Separate multiple emails with commas.
-													</FieldDescription>
-												</Field>
-											)}
-										/>
-									</FieldGroup>
-								</form>
-							</CardContent>
-							<CardFooter>
-								<Button
-									form="welcome-invite-form"
-									disabled={inviteMutation.isPending}
-								>
-									Save Invitations
-								</Button>
-							</CardFooter>
-						</Card>
+						{currentStep === 2 ? (
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2 text-lg">
+										<IconMail data-icon="inline-start" />
+										Invite teammates
+									</CardTitle>
+									<CardDescription>
+										Invite by email or skip this step with an empty list.
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<form
+										id="welcome-invite-form"
+										onSubmit={(event) => {
+											event.preventDefault()
+											event.stopPropagation()
+											void inviteForm.handleSubmit()
+										}}
+									>
+										<FieldGroup>
+											<Field>
+												<FieldLabel>Invitation link</FieldLabel>
+												<div className="flex gap-2">
+													<Input value={initial.inviteLink} readOnly />
+													<Button
+														type="button"
+														variant="outline"
+														onClick={() => void copyInviteLink()}
+													>
+														<IconCopy data-icon="inline-start" />
+														Copy
+													</Button>
+												</div>
+											</Field>
+											<inviteForm.Field
+												name="emailsText"
+												children={(field) => (
+													<Field>
+														<FieldLabel htmlFor={field.name}>Emails</FieldLabel>
+														<Textarea
+															id={field.name}
+															value={field.state.value}
+															onChange={(event) => {
+																field.handleChange(event.target.value)
+															}}
+															placeholder="ada@example.com, grace@example.com"
+														/>
+														<FieldDescription>
+															Separate multiple emails with commas.
+														</FieldDescription>
+													</Field>
+												)}
+											/>
+										</FieldGroup>
+									</form>
+								</CardContent>
+								<CardFooter className="justify-between gap-2">
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() => void skipInvites()}
+										disabled={inviteMutation.isPending}
+									>
+										Skip
+									</Button>
+									<Button
+										form="welcome-invite-form"
+										disabled={inviteMutation.isPending}
+									>
+										Next
+										<IconArrowRight data-icon="inline-end" />
+									</Button>
+								</CardFooter>
+							</Card>
+						) : null}
 
-						<Card>
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-lg">
-									<IconBrandGithub data-icon="inline-start" />
-									GitHub
-								</CardTitle>
-								<CardDescription>
-									Authenticate GitHub now, or skip it for this setup pass.
-								</CardDescription>
-							</CardHeader>
-							<CardFooter className="gap-2">
-								<Button
-									type="button"
-									onClick={() => void startGithub()}
-									disabled={githubMutation.isPending || initial.githubConnected}
-								>
-									{initial.githubConnected
-										? 'GitHub connected'
-										: 'Authenticate'}
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									onClick={() =>
-										void githubMutation.mutateAsync({
-											workspaceSlug: params.workspaceSlug,
-											action: 'skip',
-										})
-									}
-									disabled={githubMutation.isPending}
-								>
-									Skip
-								</Button>
-							</CardFooter>
-						</Card>
+						{currentStep === 3 ? (
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2 text-lg">
+										<IconBrandGithub data-icon="inline-start" />
+										GitHub
+									</CardTitle>
+									<CardDescription>
+										Authenticate GitHub now, or skip it for this setup pass.
+									</CardDescription>
+								</CardHeader>
+								<CardFooter className="justify-between gap-2">
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() => void skipGithub()}
+										disabled={githubMutation.isPending}
+									>
+										Skip
+									</Button>
+									<Button
+										type="button"
+										onClick={() => void startGithub()}
+										disabled={
+											githubMutation.isPending || initial.githubConnected
+										}
+									>
+										{initial.githubConnected
+											? 'GitHub connected'
+											: 'Authenticate'}
+										<IconArrowRight data-icon="inline-end" />
+									</Button>
+								</CardFooter>
+							</Card>
+						) : null}
 
-						<Card>
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-lg">
-									<IconCheck data-icon="inline-start" />
-									Updates
-								</CardTitle>
-								<CardDescription>
-									Choose product update preferences and enter the active Team.
-								</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<form
-									id="welcome-subscriptions-form"
-									onSubmit={(event) => {
-										event.preventDefault()
-										event.stopPropagation()
-										void subscriptionsForm.handleSubmit()
-									}}
-								>
-									<FieldGroup>
-										<subscriptionsForm.Field
-											name="changelogOptIn"
-											children={(field) => (
-												<Field orientation="horizontal">
-													<div className="flex flex-col gap-1">
-														<FieldLabel>Changelog updates</FieldLabel>
-														<FieldDescription>
-															Product changes and release notes.
-														</FieldDescription>
-													</div>
-													<Switch
-														checked={field.state.value}
-														onCheckedChange={(checked) => {
-															field.handleChange(checked)
-														}}
-													/>
-												</Field>
-											)}
-										/>
-										<subscriptionsForm.Field
-											name="onboardingEmailOptIn"
-											children={(field) => (
-												<Field orientation="horizontal">
-													<div className="flex flex-col gap-1">
-														<FieldLabel>Onboarding emails</FieldLabel>
-														<FieldDescription>
-															Short setup notes for new workspaces.
-														</FieldDescription>
-													</div>
-													<Switch
-														checked={field.state.value}
-														onCheckedChange={(checked) => {
-															field.handleChange(checked)
-														}}
-													/>
-												</Field>
-											)}
-										/>
-										<subscriptionsForm.Field
-											name="followActionCompleted"
-											children={(field) => (
-												<Field orientation="horizontal">
-													<div className="flex flex-col gap-1">
-														<FieldLabel>Follow Coret</FieldLabel>
-														<FieldDescription>
-															Marks the follow action as completed.
-														</FieldDescription>
-													</div>
-													<Switch
-														checked={field.state.value}
-														onCheckedChange={(checked) => {
-															field.handleChange(checked)
-														}}
-													/>
-												</Field>
-											)}
-										/>
-									</FieldGroup>
-								</form>
-							</CardContent>
-							<CardFooter>
-								<Button
-									form="welcome-subscriptions-form"
-									disabled={subscriptionsMutation.isPending}
-								>
-									Finish Welcome
-								</Button>
-							</CardFooter>
-						</Card>
+						{currentStep === 4 ? (
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2 text-lg">
+										<IconCheck data-icon="inline-start" />
+										Updates
+									</CardTitle>
+									<CardDescription>
+										Choose product update preferences and enter the active Team.
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<form
+										id="welcome-subscriptions-form"
+										onSubmit={(event) => {
+											event.preventDefault()
+											event.stopPropagation()
+											void subscriptionsForm.handleSubmit()
+										}}
+									>
+										<FieldGroup>
+											<subscriptionsForm.Field
+												name="changelogOptIn"
+												children={(field) => (
+													<Field orientation="horizontal">
+														<div className="flex flex-col gap-1">
+															<FieldLabel>Changelog updates</FieldLabel>
+															<FieldDescription>
+																Product changes and release notes.
+															</FieldDescription>
+														</div>
+														<Switch
+															checked={field.state.value}
+															onCheckedChange={(checked) => {
+																field.handleChange(checked)
+															}}
+														/>
+													</Field>
+												)}
+											/>
+											<subscriptionsForm.Field
+												name="onboardingEmailOptIn"
+												children={(field) => (
+													<Field orientation="horizontal">
+														<div className="flex flex-col gap-1">
+															<FieldLabel>Onboarding emails</FieldLabel>
+															<FieldDescription>
+																Short setup notes for new workspaces.
+															</FieldDescription>
+														</div>
+														<Switch
+															checked={field.state.value}
+															onCheckedChange={(checked) => {
+																field.handleChange(checked)
+															}}
+														/>
+													</Field>
+												)}
+											/>
+											<subscriptionsForm.Field
+												name="followActionCompleted"
+												children={(field) => (
+													<Field orientation="horizontal">
+														<div className="flex flex-col gap-1">
+															<FieldLabel>Follow Coret</FieldLabel>
+															<FieldDescription>
+																Marks the follow action as completed.
+															</FieldDescription>
+														</div>
+														<Switch
+															checked={field.state.value}
+															onCheckedChange={(checked) => {
+																field.handleChange(checked)
+															}}
+														/>
+													</Field>
+												)}
+											/>
+										</FieldGroup>
+									</form>
+								</CardContent>
+								<CardFooter className="justify-end">
+									<Button
+										form="welcome-subscriptions-form"
+										disabled={subscriptionsMutation.isPending}
+									>
+										Finish Welcome
+										<IconArrowRight data-icon="inline-end" />
+									</Button>
+								</CardFooter>
+							</Card>
+						) : null}
 					</div>
 				</div>
 			</div>

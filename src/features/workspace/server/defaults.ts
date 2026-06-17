@@ -69,19 +69,7 @@ function normalizeKeySegment(value: string) {
 }
 
 export function getTeamKeyBase(name: string) {
-	const tokens = name.match(/[a-z0-9]+/gi)?.map(normalizeKeySegment) ?? []
-
-	if (tokens.length > 1) {
-		const initials = tokens.map((token) => token.at(0)).join('')
-		return initials.slice(0, 5) || 'TEAM'
-	}
-
-	const single = tokens.at(0)
-	if (single) {
-		return single.slice(0, 4) || 'TEAM'
-	}
-
-	return 'TEAM'
+	return normalizeKeySegment(name).slice(0, 4) || 'TEAM'
 }
 
 function withNumericSuffix(base: string, index: number) {
