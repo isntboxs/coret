@@ -10,7 +10,7 @@ import {
 } from '@tabler/icons-react'
 import { Select as SelectPrimitive } from 'radix-ui'
 
-import { cn } from '@/lib/utils'
+import { cn } from '#/shared/utils'
 
 function Select({
 	...props

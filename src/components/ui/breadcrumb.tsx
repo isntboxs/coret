@@ -4,7 +4,7 @@ import * as React from 'react'
 import { IconChevronRight, IconDots } from '@tabler/icons-react'
 import { Slot } from 'radix-ui'
 
-import { cn } from '@/lib/utils'
+import { cn } from '#/shared/utils'
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<'nav'>) {
 	return (

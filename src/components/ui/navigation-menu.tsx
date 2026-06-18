@@ -4,7 +4,7 @@ import { IconChevronDown } from '@tabler/icons-react'
 import { cva } from 'class-variance-authority'
 import { NavigationMenu as NavigationMenuPrimitive } from 'radix-ui'
 
-import { cn } from '@/lib/utils'
+import { cn } from '#/shared/utils'
 
 function NavigationMenu({
 	className,

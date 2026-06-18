@@ -6,6 +6,7 @@ import { cva } from 'class-variance-authority'
 import { Slot } from 'radix-ui'
 import type { VariantProps } from 'class-variance-authority'
 
+import { cn } from '#/shared/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
@@ -23,7 +24,6 @@ import {
 	TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { cn } from '@/lib/utils'
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state'
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7

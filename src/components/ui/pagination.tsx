@@ -7,8 +7,8 @@ import {
 	IconDots,
 } from '@tabler/icons-react'
 
+import { cn } from '#/shared/utils'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 
 function Pagination({ className, ...props }: React.ComponentProps<'nav'>) {
 	return (

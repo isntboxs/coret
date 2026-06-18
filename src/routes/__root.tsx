@@ -16,8 +16,8 @@ import { Toaster } from 'sonner'
 
 import { AppUpdateToast } from '#/components/app-update-toast'
 import { ThemeProvider } from '#/components/providers/theme-provider'
-import { getAuthFn } from '#/functions/get-auth-Fn'
-import type { orpc } from '#/orpc/client'
+import { getAuthFn } from '#/modules/auth/session'
+import type { orpc } from '#/server/orpc/client'
 import appCss from '#/styles.css?url'
 
 interface AppRouterContext {
